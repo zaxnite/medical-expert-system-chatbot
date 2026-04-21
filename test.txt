@@ -1,0 +1,81 @@
+**Test 1 — Influenza**
+Free text: *skip (press Enter)*
+Say **YES** to: fatigue, fever, headache, body aches, chills, sudden onset, cough
+Say **NO** to everything else
+Expected: Influenza ~100%
+
+---
+
+**Test 2 — Common Cold**
+Free text: *"I have a runny nose and keep sneezing"*
+Confirm yes
+Say **YES** to: cough, sore throat, fatigue
+Say **NO** to: fever, body aches, chills
+Expected: Common Cold
+
+---
+
+**Test 3 — COVID-19**
+Free text: *"I lost my sense of smell and taste and have a fever"*
+Confirm yes
+Say **YES** to: cough, fatigue, shortness of breath
+Expected: COVID-19 ~83%
+
+---
+
+**Test 4 — Dengue Fever**
+Free text: *skip*
+Say **YES** to: fever, headache, severe joint pain, skin rash, pain behind eyes, fatigue
+Expected: Dengue Fever ~83%
+
+---
+
+**Test 5 — Malaria**
+Free text: *"I have a fever that comes and goes with heavy sweating"*
+Confirm yes
+Say **YES** to: chills, headache, nausea, fatigue
+Expected: Malaria ~86%
+
+---
+
+**Test 6 — Appendicitis**
+Free text: *skip*
+Say **YES** to: nausea, vomiting, fever, right lower abdominal pain, rebound tenderness
+Say **NO** to: diarrhea
+Expected: Appendicitis 100%
+
+---
+
+**Test 7 — Migraine**
+Free text: *"I have a throbbing headache on one side with flashing lights"*
+Confirm yes
+Say **YES** to: light sensitivity, pulsating pain
+Say **NO** to: fever, neck stiffness, vomiting, chills
+Expected: Migraine ~83%
+
+---
+
+**Test 8 — Diabetes Type 2**
+Free text: *"I am always thirsty and peeing a lot"*
+Confirm yes
+Say **YES** to: fatigue, blurred vision, slow wound healing
+Say **NO** to: fever
+Expected: Diabetes T2 ~100%
+
+---
+
+**Test 9 — Hypothyroidism**
+Free text: *"I keep gaining weight and my hair is falling out"*
+Confirm yes
+Say **YES** to: fatigue, cold intolerance, dry skin, constipation
+Say **NO** to: fever, chills
+Expected: Hypothyroidism ~83%
+
+---
+
+**Test 10 — Inconclusive**
+Free text: *skip*
+Say **YES** to: fatigue only
+Say **NO** to everything else
+Expected: Inconclusive — not enough data
+
