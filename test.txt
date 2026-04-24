@@ -1,242 +1,484 @@
 MEDICAL EXPERT SYSTEM - TEST SCENARIOS
-All 20 diseases across all 5 groups.
+All 20 Diseases | BCS 222 Programming Paradigms
+============================================================
 
-================================================================================
+HOW TO USE:
+  1. Type the Free text into the symptom description prompt
+  2. Confirm detected symptoms with 'yes'
+  3. Answer each question YES or NO exactly as listed
+  4. Every symptom for the disease is accounted for
+
+NOTE ON FREE TEXT:
+  The phrases in "Free text" are taken directly from the symptom
+  mapper. Type them exactly as shown for guaranteed detection.
+  The "Symptoms detected" line shows which Prolog atoms will be
+  asserted into the engine before yes/no questions begin.
+
+============================================================
 GROUP A - RESPIRATORY
-================================================================================
+============================================================
 
 Test 1 - Influenza
-Patient statement: "I have a fever and my whole body is aching"
-Confirm yes
-Answer YES to: cough, fatigue, headache, chills, sudden onset
-Answer NO to: diarrhea, neck stiffness
-Expected Result: Influenza ~100%
+----------------------------------------
+Free text: I have body aches and muscle pain and it came on suddenly
+Symptoms detected: body_aches, sudden_onset
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a cough                   [cough]
+  - I feel tired and weak            [fatigue]
+  - I have a headache                [headache]
+  - I have chills and shivering      [chills]
+
+Expected: Influenza - 100% confidence
+
+------------------------------------------------------------
 
 Test 2 - Common Cold
-Patient statement: "I have a runny nose and keep sneezing"
-Confirm yes
-Answer YES to: cough, sore throat, fatigue
-Answer NO to: fever, body aches, chills
-Expected Result: Common Cold ~100%
+----------------------------------------
+Free text: I have a runny nose and I keep sneezing
+Symptoms detected: runny_nose, sneezing
 
----
+Symptoms to say YES to:
+  - I have a cough                   [cough]
+  - I have a sore throat             [sore_throat]
+  - I feel tired and weak            [fatigue]
+
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+  - I have chills and shivering      [chills]
+  - I have body aches and muscle pain [body_aches]
+
+Expected: Common Cold - 100% confidence
+
+------------------------------------------------------------
 
 Test 3 - Pneumonia
-Patient statement: "I have a fever and I keep coughing up phlegm"
-Confirm yes
-Answer YES to: fatigue, chest pain, difficulty breathing
-Answer NO to: diarrhea, neck stiffness
-Expected Result: Pneumonia ~100%
+----------------------------------------
+Free text: I am breathless and I have chest pain
+Symptoms detected: difficulty_breathing, chest_pain
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a cough                   [cough]
+  - I feel tired and weak            [fatigue]
+  - I am coughing up phlegm          [productive_cough]
+
+Expected: Pneumonia - 100% confidence
+
+------------------------------------------------------------
 
 Test 4 - Tuberculosis
-Patient statement: "I have had a persistent cough for weeks and I keep waking up drenched in sweat"
-Confirm yes
-Answer YES to: weight loss, fatigue, low grade fever, chest pain
-Answer NO to: sudden onset, diarrhea
-Expected Result: Tuberculosis ~87%
+----------------------------------------
+Free text: I have had a persistent cough for weeks and I wake up drenched in sweat at night
+Symptoms detected: chronic_cough, night_sweats
 
-NOTE: TB does not reach 100% unless haemoptysis is also confirmed - that is intentional and clinically correct.
+Symptoms to say YES to:
+  - I am coughing up phlegm          [productive_cough]
+  - I have been losing weight without trying [weight_loss]
+  - I feel tired and weak            [fatigue]
+  - I have a mild fever              [low_grade_fever]
+  - I have chest pain                [chest_pain]
+  - I have been coughing up blood    [haemoptysis]
 
-================================================================================
+Symptoms to say NO to:
+  - it came on suddenly              [sudden_onset]
+
+Expected: Tuberculosis - 100% confidence
+
+============================================================
 GROUP B - VIRAL / INFECTIOUS
-================================================================================
+============================================================
 
 Test 5 - COVID-19
-Patient statement: "I lost my sense of smell and taste and have a fever"
-Confirm yes
-Answer YES to: cough, fatigue, shortness of breath
-Answer NO to: neck stiffness, diarrhea
-Expected Result: COVID-19 ~100%
+----------------------------------------
+Free text: I lost my sense of smell and I lost my sense of taste
+Symptoms detected: loss_of_smell, loss_of_taste
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a cough                   [cough]
+  - I feel tired and weak            [fatigue]
+  - I am short of breath             [shortness_of_breath]
+
+Symptoms to say NO to:
+  - my fever comes and goes          [cyclical_fever]
+  - I have severe joint pain         [severe_joint_pain]
+
+Expected: COVID-19 - 100% confidence
+
+------------------------------------------------------------
 
 Test 6 - Dengue Fever
-Patient statement: "I have a high fever and severe pain in all my joints"
-Confirm yes
-Answer YES to: headache, fatigue, skin rash, pain behind eyes
-Answer NO to: neck stiffness, diarrhea
-Expected Result: Dengue Fever ~100%
+----------------------------------------
+Free text: I have severe joint pain and I have a rash
+Symptoms detected: severe_joint_pain, skin_rash
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a headache                [headache]
+  - I feel tired and weak            [fatigue]
+  - I have pain behind my eyes       [pain_behind_eyes]
+
+Symptoms to say NO to:
+  - I lost my sense of smell         [loss_of_smell]
+  - I lost my sense of taste         [loss_of_taste]
+
+Expected: Dengue Fever - 100% confidence
+
+------------------------------------------------------------
 
 Test 7 - Malaria
-Patient statement: "My fever keeps coming and going in cycles and I am shivering"
-Confirm yes
-Answer YES to: headache, fatigue, nausea, sweating episodes
-Answer NO to: neck stiffness, diarrhea
-Expected Result: Malaria ~100%
+----------------------------------------
+Free text: My fever comes and goes and I have heavy sweating
+Symptoms detected: cyclical_fever, sweating_episodes
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have chills and shivering      [chills]
+  - I have a headache                [headache]
+  - I feel tired and weak            [fatigue]
+  - I feel nauseous                  [nausea]
+
+Symptoms to say NO to:
+  - I lost my sense of smell         [loss_of_smell]
+  - I have severe joint pain         [severe_joint_pain]
+
+Expected: Malaria - 100% confidence
+
+------------------------------------------------------------
 
 Test 8 - Chickenpox
-Patient statement: "I have blisters all over my body and they are very itchy"
-Confirm yes
-Answer YES to: fever, fatigue, loss of appetite, headache, chills
-Answer NO to: neck stiffness, diarrhea, productive cough
-Expected Result: Chickenpox ~100%
+----------------------------------------
+Free text: I have an itchy rash all over and I have fluid filled blisters on my skin
+Symptoms detected: itchy_rash, vesicular_rash
 
-================================================================================
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I feel tired and weak            [fatigue]
+  - I have no appetite               [loss_of_appetite]
+  - I have a headache                [headache]
+  - I have chills and shivering      [chills]
+
+Symptoms to say NO to:
+  - my fever comes and goes          [cyclical_fever]
+  - I lost my sense of smell         [loss_of_smell]
+  - I lost my sense of taste         [loss_of_taste]
+
+Expected: Chickenpox - 100% confidence
+
+============================================================
 GROUP C - GASTROINTESTINAL
-================================================================================
+============================================================
 
 Test 9 - Gastroenteritis
-Patient statement: "I have been vomiting and have very bad diarrhea"
-Confirm yes
-Answer YES to: nausea, abdominal pain, cramping, low grade fever
-Answer NO to: chest pain, neck stiffness
-Expected Result: Gastroenteritis ~100%
+----------------------------------------
+Free text: I have diarrhea and I have stomach cramps
+Symptoms detected: diarrhea, cramping
 
----
+  NOTE: "stomach cramps" now correctly maps to cramping (not
+  abdominal_pain) — the system detects cramping from free text.
+
+Symptoms to say YES to:
+  - I feel nauseous                  [nausea]
+  - I keep vomiting                  [vomiting]
+  - I have stomach pain              [abdominal_pain]
+  - I have a mild fever              [low_grade_fever]
+
+Symptoms to say NO to:
+  - my stomach is very tender        [rebound_tenderness]
+  - I have pain lower right of my stomach [right_lower_quad_pain]
+
+Expected: Gastroenteritis - 100% confidence
+
+------------------------------------------------------------
 
 Test 10 - Appendicitis
-Patient statement: "I have sharp pain on my lower right side and my stomach is very tender"
-Confirm yes
-Answer YES to: nausea, vomiting, fever
-Answer NO to: diarrhea
-Expected Result: Appendicitis ~100%
+----------------------------------------
+Free text: I have pain lower right of my stomach and my stomach is very tender
+Symptoms detected: right_lower_quad_pain, rebound_tenderness
 
----
+Symptoms to say YES to:
+  - I feel nauseous                  [nausea]
+  - I keep vomiting                  [vomiting]
+  - I have a fever                   [fever]
+
+Symptoms to say NO to:
+  - I have diarrhea                  [diarrhea]
+
+Expected: Appendicitis - 100% confidence
+
+------------------------------------------------------------
 
 Test 11 - Peptic Ulcer Disease
-Patient statement: "I have a burning pain in my upper stomach and I feel bloated"
-Confirm yes
-Answer YES to: nausea, loss of appetite, vomiting
-Answer NO to: fever, chills, diarrhea
-Expected Result: Peptic Ulcer ~100%
+----------------------------------------
+Free text: I have a burning pain in my upper stomach and I feel bloated and gassy
+Symptoms detected: burning_epigastric_pain, bloating
 
----
+Symptoms to say YES to:
+  - I feel nauseous                  [nausea]
+  - I have no appetite               [loss_of_appetite]
+  - I keep vomiting                  [vomiting]
+
+Symptoms to say NO to:
+  - I have diarrhea                  [diarrhea]
+  - I have a fever                   [fever]
+  - I have pain lower right of my stomach [right_lower_quad_pain]
+
+Expected: Peptic Ulcer Disease - 100% confidence
+
+------------------------------------------------------------
 
 Test 12 - Irritable Bowel Syndrome
-Patient statement: "I keep getting stomach cramps and I feel bloated all the time"
-Confirm yes
-Answer YES to: abdominal pain, diarrhea, constipation
-Answer NO to: fever, vomiting, chills
-Expected Result: Irritable Bowel Syndrome ~100%
+----------------------------------------
+Free text: I have stomach cramps and I feel bloated and gassy
+Symptoms detected: cramping, bloating
 
-================================================================================
+Symptoms to say YES to:
+  - I have stomach pain              [abdominal_pain]
+  - I have diarrhea                  [diarrhea]
+  - I am constipated                 [constipation]
+
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+  - I keep vomiting                  [vomiting]
+  - my stomach is very tender        [rebound_tenderness]
+
+Expected: Irritable Bowel Syndrome - 100% confidence
+
+============================================================
 GROUP D - NEUROLOGICAL / ENT
-================================================================================
+============================================================
 
 Test 13 - Meningitis
-Patient statement: "I have a very bad headache and my neck is so stiff I can barely move it"
-Confirm yes
-Answer YES to: fever, light sensitivity, confusion
-Answer NO to: diarrhea, runny nose
-Expected Result: Meningitis ~100%
+----------------------------------------
+Free text: I feel confused and disoriented and I have a very stiff neck
+Symptoms detected: confusion, neck_stiffness
 
----
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a headache                [headache]
+  - light hurts my eyes              [light_sensitivity]
+
+Expected: Meningitis - 100% confidence
+
+------------------------------------------------------------
 
 Test 14 - Migraine
-Patient statement: "I have a throbbing headache on one side with flashing lights"
-Confirm yes
-Answer YES to: nausea, light sensitivity
-Answer NO to: fever, chills, vomiting
-Expected Result: Migraine ~100%
+----------------------------------------
+Free text: I have a throbbing headache and I am seeing flashing lights
+Symptoms detected: pulsating_pain, visual_aura
 
----
+  NOTE: "throbbing headache" maps to pulsating_pain.
+  "flashing lights" maps to visual_aura.
 
-Test 15 - Tension Headache
-Patient statement: "I have a dull headache and feel dizzy and tired"
-Confirm yes
-Answer YES to: light sensitivity, neck stiffness
-Answer NO to: fever, vomiting, pulsating pain, one sided pain, visual aura
-Expected Result: Tension Headache ~100%
+Symptoms to say YES to:
+  - I have a headache                [headache]
+  - I feel nauseous                  [nausea]
+  - light hurts my eyes              [light_sensitivity]
+  - the headache is on one side      [one_sided_pain]
 
-NOTE: The NO answers here are critical - they distinguish tension headache from migraine and meningitis.
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+  - I have a very stiff neck         [neck_stiffness]
+  - I have a sore throat             [sore_throat]
 
----
+Expected: Migraine - 100% confidence
 
-Test 16 - Strep Throat
-Patient statement: "My throat is very painful and I can see white patches at the back"
-Confirm yes
-Answer YES to: fever, swollen lymph nodes
-Answer NO to: cough, chills
-Expected Result: Strep Throat ~100%
+------------------------------------------------------------
 
-================================================================================
+Test 15 - Strep Throat
+----------------------------------------
+Free text: I have white patches on my throat and I have swollen glands in my neck
+Symptoms detected: tonsillar_exudate, swollen_lymph_nodes
+
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a sore throat             [sore_throat]
+
+Symptoms to say NO to:
+  - I feel nauseous                  [nausea]
+
+Expected: Strep Throat - 100% confidence
+
+------------------------------------------------------------
+
+Test 16 - Tension Headache
+----------------------------------------
+Free text: I feel dizzy and I have a very stiff neck
+Symptoms detected: dizziness, neck_stiffness
+
+Symptoms to say YES to:
+  - I have a headache                [headache]
+  - I feel tired and weak            [fatigue]
+  - light hurts my eyes              [light_sensitivity]
+
+Symptoms to say NO to:
+  - the headache is on one side      [one_sided_pain]
+  - I have a fever                   [fever]
+  - I have a throbbing headache      [pulsating_pain]
+
+Expected: Tension Headache - 100% confidence
+
+============================================================
 GROUP E - METABOLIC / SYSTEMIC
-================================================================================
+============================================================
 
 Test 17 - Diabetes Type 2
-Patient statement: "I am always thirsty and I urinate very frequently"
-Confirm yes
-Answer YES to: fatigue, blurred vision, slow wound healing
-Answer NO to: fever, chills
-Expected Result: Diabetes Type 2 ~100%
+----------------------------------------
+Free text: I am always very thirsty and I need to pee a lot
+Symptoms detected: excessive_thirst, frequent_urination
 
----
+Symptoms to say YES to:
+  - I feel tired and weak            [fatigue]
+  - my vision is blurry              [blurred_vision]
+  - my cuts are not healing          [slow_wound_healing]
+
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+  - I have been told I have a slow pulse [slow_heart_rate]
+
+Expected: Diabetes Type 2 - 100% confidence
+
+------------------------------------------------------------
 
 Test 18 - Hypothyroidism
-Patient statement: "I keep gaining weight and my hair is falling out"
-Confirm yes
-Answer YES to: fatigue, cold intolerance, dry skin, constipation
-Answer NO to: fever, chills
-Expected Result: Hypothyroidism ~100%
+----------------------------------------
+Free text: I keep gaining weight and I always feel cold
+Symptoms detected: weight_gain, cold_intolerance
 
----
+  NOTE: "I always feel cold" maps to cold_intolerance.
+  "I have cold hands and feet" maps separately to cold_hands_and_feet.
+
+Symptoms to say YES to:
+  - I feel tired and weak            [fatigue]
+  - my skin is very dry              [dry_skin]
+  - I am constipated                 [constipation]
+  - my hair is falling out           [hair_loss]
+
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+
+Expected: Hypothyroidism - 100% confidence
+
+------------------------------------------------------------
 
 Test 19 - Anemia
-Patient statement: "I feel dizzy all the time and my hands and feet are always cold"
-Confirm yes
-Answer YES to: fatigue, headache, pale skin, shortness of breath
-Answer NO to: fever, chills
-Expected Result: Anemia ~100%
+----------------------------------------
+Free text: My skin looks pale and my hands and feet are always cold
+Symptoms detected: pale_skin, cold_hands_and_feet
 
----
+  NOTE: "my hands and feet are always cold" maps to cold_hands_and_feet.
+  Use this exact phrase — "always cold" alone maps to cold_intolerance.
+
+Symptoms to say YES to:
+  - I feel tired and weak            [fatigue]
+  - I have a headache                [headache]
+  - I feel dizzy                     [dizziness]
+  - I am short of breath             [shortness_of_breath]
+
+Symptoms to say NO to:
+  - I have a fever                   [fever]
+  - I have been told I have a slow pulse [slow_heart_rate]
+  - I am always very thirsty         [excessive_thirst]
+
+Expected: Anemia - 100% confidence
+
+------------------------------------------------------------
 
 Test 20 - Typhoid Fever
-Patient statement: "I have a fever and I noticed small rose-coloured spots on my stomach"
-Confirm yes
-Answer YES to: headache, fatigue, abdominal pain, slow heart rate
-Answer NO to: neck stiffness, sneezing, runny nose
-Expected Result: Typhoid Fever ~100%
+----------------------------------------
+Free text: I have rose spots on my skin and I have been told I have a slow pulse
+Symptoms detected: rose_spot_rash, slow_heart_rate
 
-================================================================================
-EDGE CASE TESTS
-================================================================================
+Symptoms to say YES to:
+  - I have a fever                   [fever]
+  - I have a headache                [headache]
+  - I feel tired and weak            [fatigue]
+  - I have stomach pain              [abdominal_pain]
 
-Edge Case 1 - Migraine vs Meningitis (critical differentiator)
-Patient statement: "I have a severe headache and sensitivity to light"
-Confirm yes
-Answer YES to: neck stiffness, fever, confusion
-Answer NO to: pulsating pain, one sided pain, visual aura
-Expected Result: Meningitis (neck stiffness + fever eliminates migraine via hard rules)
+Symptoms to say NO to:
+  - I keep gaining weight            [weight_gain]
 
----
+Expected: Typhoid Fever - 100% confidence
 
-Edge Case 2 - Tension Headache vs Migraine
-Patient statement: "I have a headache and feel tired"
-Confirm yes
-Answer YES to: dizziness, light sensitivity, neck stiffness
-Answer NO to: fever, vomiting, pulsating pain, one sided pain, visual aura
-Expected Result: Tension Headache (absence of aura and pulsating pain is the key split)
+============================================================
+EDGE CASES
+============================================================
 
----
+Edge 1 - Inconclusive (contradictory profile)
+----------------------------------------
+Free text: I have a fever and I keep gaining weight
+Symptoms detected: fever, weight_gain
 
-Edge Case 3 - Gastroenteritis vs Appendicitis (RLQ pain)
-Patient statement: "I have stomach pain and feel nauseous"
-Confirm yes
-Answer YES to: right lower quad pain, rebound tenderness, fever
-Answer NO to: diarrhea
-Expected Result: Appendicitis (diarrhea NO + RLQ pain eliminates gastroenteritis)
+Symptoms to say YES to:
+  - I feel tired and weak            [fatigue]
+  - I have a headache                [headache]
 
----
+Symptoms to say NO to:
+  - everything else
 
-Edge Case 4 - TB vs Pneumonia (chronicity)
-Patient statement: "I have been coughing for weeks and I am losing weight"
-Confirm yes
-Answer YES to: night sweats, fatigue, low grade fever, chest pain
-Answer NO to: sudden onset, diarrhea
-Expected Result: Tuberculosis (chronic_cough + night_sweats + weight_loss distinguishes from pneumonia)
+Expected: Inconclusive
+Reason: fever hard-rules out all chronic diseases (hypothyroidism,
+        diabetes, anemia etc.), weight_gain hard-rules out all acute
+        infectious diseases. No disease survives both constraints.
 
----
+------------------------------------------------------------
 
-Edge Case 5 - Inconclusive (contradictory profile)
-Patient statement: "I have a fever and my hair is falling out"
-Confirm yes
-Answer NO to everything else asked
-Expected Result: Inconclusive (fever eliminates hypothyroidism; too few symptoms for any other disease)
+Edge 2 - Migraine vs Meningitis disambiguation
+----------------------------------------
+Free text: I have a throbbing headache and I am seeing flashing lights
+Symptoms detected: pulsating_pain, visual_aura
+
+Symptoms to say YES to:
+  - I feel nauseous                  [nausea]
+  - light hurts my eyes              [light_sensitivity]
+  - the headache is on one side      [one_sided_pain]
+
+Symptoms to say NO to:
+  - I have a very stiff neck         [neck_stiffness]
+  - I have a fever                   [fever]
+
+Expected: Migraine
+Reason: neck_stiffness NO eliminates meningitis.
+        pulsating_pain + visual_aura + one_sided_pain = migraine.
+
+------------------------------------------------------------
+
+Edge 3 - Appendicitis vs Gastroenteritis disambiguation
+----------------------------------------
+Free text: I feel nauseous and I have stomach pain
+Symptoms detected: nausea, abdominal_pain
+
+Symptoms to say YES to:
+  - I have pain lower right of my stomach [right_lower_quad_pain]
+  - my stomach is very tender        [rebound_tenderness]
+  - I have a fever                   [fever]
+
+Symptoms to say NO to:
+  - I have diarrhea                  [diarrhea]
+
+Expected: Appendicitis
+Reason: diarrhea NO hard-rules out gastroenteritis.
+        RLQ pain + rebound tenderness + fever = appendicitis.
+
+------------------------------------------------------------
+
+Edge 4 - TB vs Pneumonia disambiguation
+----------------------------------------
+Free text: I have had a persistent cough for weeks and I have a mild fever
+Symptoms detected: chronic_cough, low_grade_fever
+
+Symptoms to say YES to:
+  - I wake up drenched in sweat at night  [night_sweats]
+  - I have been losing weight without trying [weight_loss]
+  - I am coughing up phlegm          [productive_cough]
+
+Symptoms to say NO to:
+  - it came on suddenly              [sudden_onset]
+  - I have diarrhea                  [diarrhea]
+
+Expected: Tuberculosis
+Reason: chronic_cough + night_sweats + weight_loss distinguish TB.
+        sudden_onset NO hard-rules out influenza.
+        pneumonia is eliminated because weight_loss is a hard-NO for it.
