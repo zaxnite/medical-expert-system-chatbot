@@ -151,6 +151,8 @@ symptom_of(strep_throat, fever).
 symptom_of(strep_throat, sore_throat).
 symptom_of(strep_throat, tonsillar_exudate).
 symptom_of(strep_throat, swollen_lymph_nodes).
+symptom_of(strep_throat, headache).
+symptom_of(strep_throat, sudden_onset).
 test_required(strep_throat, rapid_strep_test).
 test_required(strep_throat, throat_culture).
 

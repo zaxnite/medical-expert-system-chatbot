@@ -287,19 +287,19 @@ Expected: Migraine - 100% confidence
 
 ------------------------------------------------------------
 
-Test 15 - Strep Throat
-----------------------------------------
+Test 15 — Strep Throat
+------------------------------------------------------------
 Free text: I have white patches on my throat and I have swollen glands in my neck
 Symptoms detected: tonsillar_exudate, swollen_lymph_nodes
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a sore throat             [sore_throat]
+Say YES to:
+  - I have a fever           [fever]
+  - I have a sore throat     [sore_throat]
+  - I have a headache        [headache]
+  - it came on suddenly      [sudden_onset]
 
-Symptoms to say NO to:
-  - I feel nauseous                  [nausea]
-
-Expected: Strep Throat - 100% confidence
+Say NO to: cough, nausea
+Expected: Strep Throat
 
 ------------------------------------------------------------
 

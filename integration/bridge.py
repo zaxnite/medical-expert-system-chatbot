@@ -173,12 +173,22 @@ class PrologBridge:
             self.assert_symptom(symptom)
         else:
             self.deny_symptom(symptom)
-        # Ensure asked/1 is set so next_question skips this symptom.
-        # Must be module-qualified — diagnosis_rules:next_question/1 reads
-        # asked/1 from the diagnosis_rules namespace, not the global user namespace.
+        # Ensure asked/1 is set so next_question skips this symptom
         list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
-        # 2. Check if consultation is complete
+        # 2. Early exit: if only 1 candidate remains and confidence >= 60%,
+        #    diagnose immediately — bypass min_confirmed_symptoms AND
+        #    diagnosis_threshold since we have certainty from elimination.
+        #    Build the result directly rather than going through consult_result/3
+        #    (which requires diagnosis/1 which checks the threshold again).
+        candidates = list(self._prolog.query("candidate(D)"))
+        if len(candidates) == 1:
+            sole = str(candidates[0]["D"])
+            conf_res = list(self._prolog.query(f"confidence({sole}, Pct)"))
+            if conf_res and float(conf_res[0]["Pct"]) >= 60.0:
+                return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
+
+        # 3. Check if consultation is complete via normal criteria
         done = list(self._prolog.query("consultation_complete(Reason)"))
         if done:
             return self._build_result()
@@ -207,6 +217,38 @@ class PrologBridge:
     # ----------------------------------------------------------------
     # RESULT RETRIEVAL
     # ----------------------------------------------------------------
+
+    def _build_early_exit_result(self, disease: str, confidence: float) -> dict:
+        """
+        Build a result dict for the early-exit case:
+        only 1 candidate remains with confidence >= 60%.
+        Bypasses diagnosis/1 and consult_result/3 which require
+        the full threshold check — we already have certainty
+        through hard-rule elimination.
+        """
+        # Get recommended tests for this disease
+        tests_raw = list(self._prolog.query(
+            f"needs_tests({disease}, Tests)"
+        ))
+        tests = self._parse_tests(tests_raw[0]["Tests"]) if tests_raw else []
+
+        # Get description
+        desc_res = list(self._prolog.query(
+            f"disease_description({disease}, Desc)"
+        ))
+        if desc_res:
+            desc = desc_res[0]["Desc"]
+            description = desc.decode("utf-8") if isinstance(desc, bytes) else str(desc)
+        else:
+            description = ""
+
+        return {
+            "action":      "result",
+            "disease":     disease,
+            "confidence":  confidence,
+            "description": description,
+            "tests":       tests
+        }
 
     def _build_result(self) -> dict:
         """

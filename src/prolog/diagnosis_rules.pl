@@ -502,7 +502,7 @@ hard_rule(hypothyroidism, not(rose_spot_rash)). % typhoid-specific
 hard_rule(hypothyroidism, not(burning_epigastric_pain)). % peptic ulcer sign
 hard_rule(hypothyroidism, not(sudden_onset)). % hypothyroidism develops gradually over months/years
 
-% --- anemia (extended) ---
+% --- anemia ---
 hard_rule(anemia, not(vesicular_rash)). % chickenpox, not anemia
 hard_rule(anemia, not(itchy_rash)). % chickenpox, not anemia
 hard_rule(anemia, not(pulsating_pain)). % migraine hallmark
@@ -649,17 +649,17 @@ confidence(Disease, Pct) :-
 % ================================================================
 
 :- dynamic diagnosis_threshold/1.
-diagnosis_threshold(75).
+diagnosis_threshold(70).
 
 diagnosis(Disease) :-
     candidate(Disease),
     confidence(Disease, Pct),
     diagnosis_threshold(Threshold),
     Pct >= Threshold,
-    min_confirmed_symptoms(5),
+    min_confirmed_symptoms(3),
     is_best_candidate(Disease, Pct).
 
-% Require at least 5 confirmed symptoms before any diagnosis
+% Require at least 3 confirmed symptoms before any diagnosis
 min_confirmed_symptoms(Min) :-
     findall(S, symptom(S), Confirmed),
     length(Confirmed, Count),

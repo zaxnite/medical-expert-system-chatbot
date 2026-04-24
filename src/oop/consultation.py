@@ -169,10 +169,10 @@ class Consultation:
         to_assert = result.get("to_assert", [])
         to_deny   = result.get("to_deny",   [])
 
-        # Pre-assert into Prolog engine using module-qualified assertz.
-        # diagnosis_rules:next_question/1 reads asked/1 from its own
-        # module namespace — bare assertz goes to the global 'user'
-        # namespace and is invisible to next_question/1.
+        # Pre-assert into Prolog using module-qualified assertz.
+        # diagnosis_rules:next_question/1 reads symptom/1 and asked/1
+        # from its own module namespace. Bare assertz writes to global
+        # 'user' namespace which next_question/1 never sees.
         for s in to_assert:
             list(self._bridge._prolog.query(
                 f"assertz(diagnosis_rules:symptom({s}))"
@@ -204,9 +204,12 @@ class Consultation:
         Called by the interface after free-text intake is done.
         Unblocks the reasoning thread to start asking questions.
 
-        Note: preload_symptoms() already wrote symptom/1, denied/1, and
-        asked/1 into the diagnosis_rules module namespace. This method
-        only needs to set the gate event — no re-assertion needed.
+        preload_symptoms() already wrote symptom/1, denied/1, and asked/1
+        into the diagnosis_rules module namespace using module-qualified
+        assertz. Re-asserting here causes duplicate facts in Prolog, which
+        makes findall() in symptom_match_score count the same symptom twice,
+        producing confidence scores above 100%. This method only sets the
+        gate event — no re-assertion.
         """
         self._intake_ready.set()
 
@@ -225,8 +228,8 @@ class Consultation:
         # DO NOT clear _preloaded / _preloaded_denied here.
         # preload_symptoms() populates them before start() is called,
         # and _get_next_skipping_preloaded() reads them to build the
-        # skip-set. Clearing them here empties that set and causes
-        # the bot to re-ask about symptoms the patient already described.
+        # skip-set. Clearing them here causes the bot to re-ask about
+        # symptoms the patient already described in free text.
         self._intake_ready.clear()
 
         # Launch reasoning on background thread
@@ -290,14 +293,11 @@ class Consultation:
         try:
             # Wait until free-text intake is complete
             # (interface calls intake_complete() to unblock this)
-            self._intake_ready.wait(timeout=5.0)
-
-            # Small pause to ensure all assertz() calls from
-            # intake_complete() have fully committed in Prolog
-            import time as _time
-            _time.sleep(0.1)
+            self._intake_ready.wait(timeout=120.0)  # wait up to 2 min for patient to describe symptoms
 
             # Get first question from Prolog, skipping preloaded ones
+            # (all assertz calls in preload_symptoms complete synchronously
+            # before intake_complete() calls set() — no sleep needed)
             action = self._get_next_skipping_preloaded()
             self._handle_action(action)
 
@@ -343,6 +343,13 @@ class Consultation:
                        action.get("symptom") in self._preloaded + self._preloaded_denied):
                     self._bridge.assert_symptom(action["symptom"])
                     action = self._bridge.get_first_question()
+                
+                # If only one candidate disease remains, display diagnosis immediately
+                if action.get("action") == "ask":
+                    candidate_count = self._get_candidate_count()
+                    if candidate_count == 1:
+                        action = self._bridge._build_result()
+                
                 self._handle_action(action)
 
         except Exception as e:
@@ -367,21 +374,10 @@ class Consultation:
             except Exception:
                 pass
 
-        for s in self._preloaded:
-            try:
-                list(self._bridge._prolog.query(
-                    f"assertz(diagnosis_rules:symptom({s}))"
-                ))
-            except Exception:
-                pass
-
-        for s in self._preloaded_denied:
-            try:
-                list(self._bridge._prolog.query(
-                    f"assertz(diagnosis_rules:denied({s}))"
-                ))
-            except Exception:
-                pass
+        # NOTE: symptom/1 and denied/1 facts were already written by
+        # preload_symptoms() using module-qualified assertz. Do NOT
+        # re-assert here — it causes duplicate facts which inflate
+        # confidence scores above 100%.
 
         # Fetch next question — should skip all preloaded
         for _ in range(30):
@@ -446,7 +442,7 @@ class Consultation:
     def _finish_with_result(self, action: dict) -> None:
         """Build DiagnosisResult and complete the session."""
         disease    = action.get("disease", "unknown")
-        confidence = action.get("confidence", 0.0)
+        confidence = min(100.0, action.get("confidence", 0.0))
         desc       = action.get("description", "")
         tests      = action.get("tests", [])
 
@@ -536,7 +532,7 @@ class Consultation:
             "questions_asked":   self._session.log.question_count,
             "candidates_left":   len(status.get("candidates", [])),
             "top_candidate":     status.get("top_candidate", "none"),
-            "top_confidence":    status.get("top_confidence", 0.0),
+            "top_confidence":    min(100.0, status.get("top_confidence", 0.0)),
             "confirmed_count":   len(self._session.record.confirmed_symptoms),
         }
 

@@ -229,7 +229,7 @@ class MedicalInterface:
         self._consultation: Optional[Consultation] = None
         self._last_q_data: Optional[dict] = None
         self._result_data: Optional[dict] = None
-        self._candidates  = 15  # start with all 15
+        self._candidates  = 20  # start with all 20 diseases
 
     # ----------------------------------------------------------------
     # ENTRY POINT
@@ -267,7 +267,15 @@ class MedicalInterface:
             name, self._prolog_dir, age, lisp_dir=self._lisp_dir
         )
 
-        # Register event callbacks BEFORE starting
+        # Register ALL callbacks BEFORE starting the reasoning thread.
+        # DIAGNOSIS_READY registered here (not inside _question_loop)
+        # to eliminate the race window where a fast diagnosis fires
+        # before _question_loop() has a chance to register its handler.
+        self._result_data = None
+
+        def _on_result_early(data: dict):
+            self._result_data = data
+
         self._consultation.on(
             ConsultationEvent.QUESTION_READY,
             self._on_question_ready
@@ -280,8 +288,12 @@ class MedicalInterface:
             ConsultationEvent.ERROR,
             self._on_error
         )
+        self._consultation.on(
+            ConsultationEvent.DIAGNOSIS_READY,
+            _on_result_early
+        )
 
-        # Start reasoning thread first (resets Prolog session)
+        # Start reasoning thread (resets Prolog session)
         self._consultation.start()
 
         # Free-text symptom intake AFTER start so pre-loaded
@@ -366,6 +378,30 @@ class MedicalInterface:
         if confirm not in ("yes", "y"):
             print(_c("  No problem — we will ask you questions instead.", "[90m"))
             print()
+            # Retract Prolog facts asserted by preload_symptoms() before
+            # clearing Python lists. Without this, symptom/1 facts stay
+            # in Prolog and inflate confidence scores even though the
+            # patient rejected the auto-detected symptoms.
+            for s in self._consultation._preloaded:
+                try:
+                    list(self._consultation._bridge._prolog.query(
+                        f"retract(diagnosis_rules:symptom({s}))"
+                    ))
+                    list(self._consultation._bridge._prolog.query(
+                        f"retract(diagnosis_rules:asked({s}))"
+                    ))
+                except Exception:
+                    pass
+            for s in self._consultation._preloaded_denied:
+                try:
+                    list(self._consultation._bridge._prolog.query(
+                        f"retract(diagnosis_rules:denied({s}))"
+                    ))
+                    list(self._consultation._bridge._prolog.query(
+                        f"retract(diagnosis_rules:asked({s}))"
+                    ))
+                except Exception:
+                    pass
             self._consultation._preloaded.clear()
             self._consultation._preloaded_denied.clear()
             self._consultation.intake_complete()
@@ -424,7 +460,7 @@ class MedicalInterface:
 
         while not result_received[0]:
             # Wait for next question from reasoning thread
-            got_q = self._consultation.wait_for_question(timeout=8.0)
+            got_q = self._consultation.wait_for_question(timeout=15.0)
 
             if result_received[0]:
                 break
@@ -432,9 +468,6 @@ class MedicalInterface:
             if not got_q:
                 if self._consultation.is_done:
                     break
-                continue
-
-            if self._last_q_data is None:
                 continue
 
             # Display question
