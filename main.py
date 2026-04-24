@@ -52,13 +52,18 @@ def check_dependencies() -> dict:
         (PROLOG_DIR / f).exists() for f in prolog_files
     )
 
-    # Check Lisp availability
+    # Check Lisp (SBCL) availability — no fallback
     try:
         from integration.lisp_connector import LispConnector
         conn = LispConnector(LISP_DIR)
         status["lisp"] = conn.is_available()
+        if not status["lisp"]:
+            status["lisp_error"] = (
+                "SBCL not found or Lisp files missing. "
+                "Install from https://www.sbcl.org/platform-table.html"
+            )
     except ImportError:
-        pass
+        status["lisp_error"] = "lisp_connector.py not found"
 
     return status
 
@@ -309,6 +314,13 @@ def main():
 
     # Abort if Prolog is missing — it is the core engine
     if not status["prolog"]:
+        sys.exit(1)
+
+    # Abort if Lisp (SBCL) is missing — required for input processing
+    if not status["lisp"]:
+        err = status.get("lisp_error", "SBCL not installed.")
+        print(RED + f"  ERROR: {err}" + RESET)
+        print()
         sys.exit(1)
 
     if args.test:

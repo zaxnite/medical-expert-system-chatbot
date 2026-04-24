@@ -207,7 +207,7 @@
     ;; --- sweating episodes ---
     ("sweating"                 . "sweating_episodes")
     ("sweating episodes"        . "sweating_episodes")
-    ("night sweats"             . "sweating_episodes")
+    ("sweating at night old"    . "sweating_episodes")  ; kept for malaria sweating
     ("heavy sweating"           . "sweating_episodes")
 
     ;; --- abdominal pain ---
@@ -386,6 +386,86 @@
     ("slow pulse"               . "slow_heart_rate")
     ("bradycardia"              . "slow_heart_rate")
     ("low heart rate"           . "slow_heart_rate")
+
+    ;; --- chronic cough (tuberculosis) ---
+    ("chronic cough"            . "chronic_cough")
+    ("cough for weeks"          . "chronic_cough")
+    ("cough for months"         . "chronic_cough")
+    ("persistent cough"         . "chronic_cough")
+    ("coughing for a long time" . "chronic_cough")
+    ("long term cough"          . "chronic_cough")
+
+    ;; --- night sweats (tuberculosis) ---
+    ("night sweats"             . "night_sweats")
+    ("sweating at night"        . "night_sweats")
+    ("wake up sweating"         . "night_sweats")
+    ("sweat at night"           . "night_sweats")
+    ("nocturnal sweating"       . "night_sweats")
+
+    ;; --- weight loss (tuberculosis) ---
+    ("weight loss"              . "weight_loss")
+    ("losing weight"            . "weight_loss")
+    ("lost weight"              . "weight_loss")
+    ("unexplained weight loss"  . "weight_loss")
+    ("unintentional weight loss". "weight_loss")
+    ("dropped weight"           . "weight_loss")
+
+    ;; --- haemoptysis (tuberculosis) ---
+    ("coughing up blood"        . "haemoptysis")
+    ("blood in sputum"          . "haemoptysis")
+    ("blood when coughing"      . "haemoptysis")
+    ("haemoptysis"              . "haemoptysis")
+    ("hemoptysis"               . "haemoptysis")
+    ("bloody phlegm"            . "haemoptysis")
+    ("blood in mucus"           . "haemoptysis")
+
+    ;; --- itchy rash (chickenpox) ---
+    ("itchy rash"               . "itchy_rash")
+    ("rash that itches"         . "itchy_rash")
+    ("itchy spots"              . "itchy_rash")
+    ("scratching rash"          . "itchy_rash")
+    ("itching rash"             . "itchy_rash")
+    ("pruritic rash"            . "itchy_rash")
+
+    ;; --- vesicular rash (chickenpox) ---
+    ("blisters"                 . "vesicular_rash")
+    ("blister rash"             . "vesicular_rash")
+    ("fluid filled blisters"    . "vesicular_rash")
+    ("vesicular rash"           . "vesicular_rash")
+    ("chickenpox"               . "vesicular_rash")
+    ("pox"                      . "vesicular_rash")
+    ("vesicles"                 . "vesicular_rash")
+
+    ;; --- loss of appetite (chickenpox / peptic ulcer) ---
+    ("loss of appetite"         . "loss_of_appetite")
+    ("no appetite"              . "loss_of_appetite")
+    ("not hungry"               . "loss_of_appetite")
+    ("lost appetite"            . "loss_of_appetite")
+    ("dont want to eat"         . "loss_of_appetite")
+    ("anorexia"                 . "loss_of_appetite")
+    ("not eating"               . "loss_of_appetite")
+
+    ;; --- burning epigastric pain (peptic ulcer) ---
+    ("burning stomach"          . "burning_epigastric_pain")
+    ("burning pain stomach"     . "burning_epigastric_pain")
+    ("burning pain in upper stomach" . "burning_epigastric_pain")
+    ("burning upper stomach"    . "burning_epigastric_pain")
+    ("epigastric pain"          . "burning_epigastric_pain")
+    ("stomach burning"          . "burning_epigastric_pain")
+    ("heartburn"                . "burning_epigastric_pain")
+    ("acid pain"                . "burning_epigastric_pain")
+    ("burning in stomach"       . "burning_epigastric_pain")
+    ("ulcer pain"               . "burning_epigastric_pain")
+
+    ;; --- bloating (peptic ulcer / IBS) ---
+    ("bloating"                 . "bloating")
+    ("bloated"                  . "bloating")
+    ("feel bloated"             . "bloating")
+    ("full of gas"              . "bloating")
+    ("gassy"                    . "bloating")
+    ("gas and bloating"         . "bloating")
+    ("distended stomach"        . "bloating")
+    ("abdominal distension"     . "bloating")
   ))
 
 ;;; ----------------------------------------------------------------

@@ -204,6 +204,79 @@ test_required(typhoid_fever, widal_test).
 test_required(typhoid_fever, blood_culture).
 
 
+
+
+% ================================================================
+% GROUP A — RESPIRATORY (continued)
+% ================================================================
+
+% --- Tuberculosis ---
+symptom_of(tuberculosis, chronic_cough).
+symptom_of(tuberculosis, productive_cough).
+symptom_of(tuberculosis, night_sweats).
+symptom_of(tuberculosis, weight_loss).
+symptom_of(tuberculosis, fatigue).
+symptom_of(tuberculosis, low_grade_fever).
+symptom_of(tuberculosis, chest_pain).
+symptom_of(tuberculosis, haemoptysis).
+disease_group(tuberculosis, respiratory).
+test_required(tuberculosis, sputum_culture).
+test_required(tuberculosis, chest_xray).
+test_required(tuberculosis, tuberculin_test).
+
+% ================================================================
+% GROUP B — VIRAL / INFECTIOUS (continued)
+% ================================================================
+
+% --- Chickenpox ---
+symptom_of(chickenpox, fever).
+symptom_of(chickenpox, fatigue).
+symptom_of(chickenpox, itchy_rash).
+symptom_of(chickenpox, vesicular_rash).
+symptom_of(chickenpox, loss_of_appetite).
+symptom_of(chickenpox, headache).
+symptom_of(chickenpox, chills).
+disease_group(chickenpox, viral_infectious).
+test_required(chickenpox, tzanck_smear).
+test_required(chickenpox, varicella_pcr).
+
+% ================================================================
+% GROUP C — GASTROINTESTINAL (continued)
+% ================================================================
+
+% --- Peptic Ulcer Disease ---
+symptom_of(peptic_ulcer, burning_epigastric_pain).
+symptom_of(peptic_ulcer, nausea).
+symptom_of(peptic_ulcer, bloating).
+symptom_of(peptic_ulcer, loss_of_appetite).
+symptom_of(peptic_ulcer, vomiting).
+disease_group(peptic_ulcer, gastrointestinal).
+test_required(peptic_ulcer, endoscopy).
+test_required(peptic_ulcer, h_pylori_breath_test).
+
+% --- Irritable Bowel Syndrome ---
+symptom_of(irritable_bowel_syndrome, cramping).
+symptom_of(irritable_bowel_syndrome, abdominal_pain).
+symptom_of(irritable_bowel_syndrome, bloating).
+symptom_of(irritable_bowel_syndrome, diarrhea).
+symptom_of(irritable_bowel_syndrome, constipation).
+disease_group(irritable_bowel_syndrome, gastrointestinal).
+test_required(irritable_bowel_syndrome, colonoscopy).
+test_required(irritable_bowel_syndrome, stool_analysis).
+
+% ================================================================
+% GROUP D — NEUROLOGICAL / ENT (continued)
+% ================================================================
+
+% --- Tension Headache ---
+symptom_of(tension_headache, headache).
+symptom_of(tension_headache, fatigue).
+symptom_of(tension_headache, dizziness).
+symptom_of(tension_headache, light_sensitivity).
+symptom_of(tension_headache, neck_stiffness).
+disease_group(tension_headache, neurological_ent).
+% No tests — tension headache is a clinical diagnosis
+
 % ================================================================
 % SYMPTOM QUESTIONS — what the chatbot asks the patient
 % ================================================================
@@ -260,6 +333,17 @@ symptom_question(cold_hands_and_feet, "Are your hands and feet often cold?").
 symptom_question(rose_spot_rash,      "Do you have small rose-coloured spots on your abdomen?").
 symptom_question(slow_heart_rate,     "Have you been told your heart rate is unusually slow?").
 
+symptom_question(chronic_cough,          "Have you had a persistent cough lasting more than 3 weeks?").
+symptom_question(night_sweats,           "Do you wake up drenched in sweat at night?").
+symptom_question(weight_loss,            "Have you lost weight recently without trying?").
+symptom_question(haemoptysis,            "Have you coughed up blood or blood-stained mucus?").
+symptom_question(itchy_rash,             "Do you have an itchy rash on your body?").
+symptom_question(vesicular_rash,         "Do you have a rash with small fluid-filled blisters?").
+symptom_question(loss_of_appetite,       "Have you lost your appetite or interest in eating?").
+symptom_question(burning_epigastric_pain,"Do you have a burning pain in your upper stomach area?").
+symptom_question(bloating,               "Do you feel bloated or full of gas?").
+
+
 
 % ================================================================
 % TEST CONFIRMATIONS
@@ -288,6 +372,16 @@ test_confirms(anemia,       cbc_blood_test,        shows_low_haemoglobin).
 test_confirms(anemia,       serum_ferritin,        measures_iron_stores).
 test_confirms(typhoid_fever, widal_test,           detects_salmonella_antibodies).
 test_confirms(typhoid_fever, blood_culture,        confirms_salmonella_typhi).
+test_confirms(tuberculosis,   sputum_culture,      confirms_mycobacterium_tuberculosis).
+test_confirms(tuberculosis,   chest_xray,          shows_lung_infiltrates).
+test_confirms(tuberculosis,   tuberculin_test,     indicates_tb_exposure).
+test_confirms(chickenpox,     tzanck_smear,        confirms_varicella_zoster).
+test_confirms(chickenpox,     varicella_pcr,       detects_vzv_dna).
+test_confirms(peptic_ulcer,   endoscopy,           visualises_ulcer_directly).
+test_confirms(peptic_ulcer,   h_pylori_breath_test,detects_h_pylori_infection).
+test_confirms(irritable_bowel_syndrome, colonoscopy,   rules_out_organic_disease).
+test_confirms(irritable_bowel_syndrome, stool_analysis,excludes_infection_or_inflammation).
+
 
 
 % ================================================================
@@ -324,3 +418,13 @@ disease_description(anemia,
     "Anemia is a condition where you lack enough red blood cells to carry adequate oxygen.").
 disease_description(typhoid_fever,
     "Typhoid is a bacterial infection caused by Salmonella typhi via contaminated food or water.").
+disease_description(tuberculosis,
+    "Tuberculosis is a bacterial infection caused by Mycobacterium tuberculosis, primarily affecting the lungs.").
+disease_description(chickenpox,
+    "Chickenpox is a highly contagious viral infection caused by the varicella-zoster virus, causing an itchy blister-like rash.").
+disease_description(peptic_ulcer,
+    "Peptic ulcer disease is a condition where painful sores develop in the lining of the stomach or upper small intestine.").
+disease_description(irritable_bowel_syndrome,
+    "Irritable bowel syndrome is a chronic functional gut disorder causing recurrent abdominal pain, bloating, and altered bowel habits.").
+disease_description(tension_headache,
+    "Tension headache is the most common headache type, causing a dull bilateral pressure, often triggered by stress or posture.").

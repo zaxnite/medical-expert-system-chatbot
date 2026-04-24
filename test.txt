@@ -1,81 +1,242 @@
-**Test 1 — Influenza**
-Free text: *skip (press Enter)*
-Say **YES** to: fatigue, fever, headache, body aches, chills, sudden onset, cough
-Say **NO** to everything else
-Expected: Influenza ~100%
+MEDICAL EXPERT SYSTEM - TEST SCENARIOS
+All 20 diseases across all 5 groups.
 
----
+================================================================================
+GROUP A - RESPIRATORY
+================================================================================
 
-**Test 2 — Common Cold**
-Free text: *"I have a runny nose and keep sneezing"*
+Test 1 - Influenza
+Patient statement: "I have a fever and my whole body is aching"
 Confirm yes
-Say **YES** to: cough, sore throat, fatigue
-Say **NO** to: fever, body aches, chills
-Expected: Common Cold
+Answer YES to: cough, fatigue, headache, chills, sudden onset
+Answer NO to: diarrhea, neck stiffness
+Expected Result: Influenza ~100%
 
 ---
 
-**Test 3 — COVID-19**
-Free text: *"I lost my sense of smell and taste and have a fever"*
+Test 2 - Common Cold
+Patient statement: "I have a runny nose and keep sneezing"
 Confirm yes
-Say **YES** to: cough, fatigue, shortness of breath
-Expected: COVID-19 ~83%
+Answer YES to: cough, sore throat, fatigue
+Answer NO to: fever, body aches, chills
+Expected Result: Common Cold ~100%
 
 ---
 
-**Test 4 — Dengue Fever**
-Free text: *skip*
-Say **YES** to: fever, headache, severe joint pain, skin rash, pain behind eyes, fatigue
-Expected: Dengue Fever ~83%
-
----
-
-**Test 5 — Malaria**
-Free text: *"I have a fever that comes and goes with heavy sweating"*
+Test 3 - Pneumonia
+Patient statement: "I have a fever and I keep coughing up phlegm"
 Confirm yes
-Say **YES** to: chills, headache, nausea, fatigue
-Expected: Malaria ~86%
+Answer YES to: fatigue, chest pain, difficulty breathing
+Answer NO to: diarrhea, neck stiffness
+Expected Result: Pneumonia ~100%
 
 ---
 
-**Test 6 — Appendicitis**
-Free text: *skip*
-Say **YES** to: nausea, vomiting, fever, right lower abdominal pain, rebound tenderness
-Say **NO** to: diarrhea
-Expected: Appendicitis 100%
-
----
-
-**Test 7 — Migraine**
-Free text: *"I have a throbbing headache on one side with flashing lights"*
+Test 4 - Tuberculosis
+Patient statement: "I have had a persistent cough for weeks and I keep waking up drenched in sweat"
 Confirm yes
-Say **YES** to: light sensitivity, pulsating pain
-Say **NO** to: fever, neck stiffness, vomiting, chills
-Expected: Migraine ~83%
+Answer YES to: weight loss, fatigue, low grade fever, chest pain
+Answer NO to: sudden onset, diarrhea
+Expected Result: Tuberculosis ~87%
 
----
+NOTE: TB does not reach 100% unless haemoptysis is also confirmed - that is intentional and clinically correct.
 
-**Test 8 — Diabetes Type 2**
-Free text: *"I am always thirsty and peeing a lot"*
+================================================================================
+GROUP B - VIRAL / INFECTIOUS
+================================================================================
+
+Test 5 - COVID-19
+Patient statement: "I lost my sense of smell and taste and have a fever"
 Confirm yes
-Say **YES** to: fatigue, blurred vision, slow wound healing
-Say **NO** to: fever
-Expected: Diabetes T2 ~100%
+Answer YES to: cough, fatigue, shortness of breath
+Answer NO to: neck stiffness, diarrhea
+Expected Result: COVID-19 ~100%
 
 ---
 
-**Test 9 — Hypothyroidism**
-Free text: *"I keep gaining weight and my hair is falling out"*
+Test 6 - Dengue Fever
+Patient statement: "I have a high fever and severe pain in all my joints"
 Confirm yes
-Say **YES** to: fatigue, cold intolerance, dry skin, constipation
-Say **NO** to: fever, chills
-Expected: Hypothyroidism ~83%
+Answer YES to: headache, fatigue, skin rash, pain behind eyes
+Answer NO to: neck stiffness, diarrhea
+Expected Result: Dengue Fever ~100%
 
 ---
 
-**Test 10 — Inconclusive**
-Free text: *skip*
-Say **YES** to: fatigue only
-Say **NO** to everything else
-Expected: Inconclusive — not enough data
+Test 7 - Malaria
+Patient statement: "My fever keeps coming and going in cycles and I am shivering"
+Confirm yes
+Answer YES to: headache, fatigue, nausea, sweating episodes
+Answer NO to: neck stiffness, diarrhea
+Expected Result: Malaria ~100%
 
+---
+
+Test 8 - Chickenpox
+Patient statement: "I have blisters all over my body and they are very itchy"
+Confirm yes
+Answer YES to: fever, fatigue, loss of appetite, headache, chills
+Answer NO to: neck stiffness, diarrhea, productive cough
+Expected Result: Chickenpox ~100%
+
+================================================================================
+GROUP C - GASTROINTESTINAL
+================================================================================
+
+Test 9 - Gastroenteritis
+Patient statement: "I have been vomiting and have very bad diarrhea"
+Confirm yes
+Answer YES to: nausea, abdominal pain, cramping, low grade fever
+Answer NO to: chest pain, neck stiffness
+Expected Result: Gastroenteritis ~100%
+
+---
+
+Test 10 - Appendicitis
+Patient statement: "I have sharp pain on my lower right side and my stomach is very tender"
+Confirm yes
+Answer YES to: nausea, vomiting, fever
+Answer NO to: diarrhea
+Expected Result: Appendicitis ~100%
+
+---
+
+Test 11 - Peptic Ulcer Disease
+Patient statement: "I have a burning pain in my upper stomach and I feel bloated"
+Confirm yes
+Answer YES to: nausea, loss of appetite, vomiting
+Answer NO to: fever, chills, diarrhea
+Expected Result: Peptic Ulcer ~100%
+
+---
+
+Test 12 - Irritable Bowel Syndrome
+Patient statement: "I keep getting stomach cramps and I feel bloated all the time"
+Confirm yes
+Answer YES to: abdominal pain, diarrhea, constipation
+Answer NO to: fever, vomiting, chills
+Expected Result: Irritable Bowel Syndrome ~100%
+
+================================================================================
+GROUP D - NEUROLOGICAL / ENT
+================================================================================
+
+Test 13 - Meningitis
+Patient statement: "I have a very bad headache and my neck is so stiff I can barely move it"
+Confirm yes
+Answer YES to: fever, light sensitivity, confusion
+Answer NO to: diarrhea, runny nose
+Expected Result: Meningitis ~100%
+
+---
+
+Test 14 - Migraine
+Patient statement: "I have a throbbing headache on one side with flashing lights"
+Confirm yes
+Answer YES to: nausea, light sensitivity
+Answer NO to: fever, chills, vomiting
+Expected Result: Migraine ~100%
+
+---
+
+Test 15 - Tension Headache
+Patient statement: "I have a dull headache and feel dizzy and tired"
+Confirm yes
+Answer YES to: light sensitivity, neck stiffness
+Answer NO to: fever, vomiting, pulsating pain, one sided pain, visual aura
+Expected Result: Tension Headache ~100%
+
+NOTE: The NO answers here are critical - they distinguish tension headache from migraine and meningitis.
+
+---
+
+Test 16 - Strep Throat
+Patient statement: "My throat is very painful and I can see white patches at the back"
+Confirm yes
+Answer YES to: fever, swollen lymph nodes
+Answer NO to: cough, chills
+Expected Result: Strep Throat ~100%
+
+================================================================================
+GROUP E - METABOLIC / SYSTEMIC
+================================================================================
+
+Test 17 - Diabetes Type 2
+Patient statement: "I am always thirsty and I urinate very frequently"
+Confirm yes
+Answer YES to: fatigue, blurred vision, slow wound healing
+Answer NO to: fever, chills
+Expected Result: Diabetes Type 2 ~100%
+
+---
+
+Test 18 - Hypothyroidism
+Patient statement: "I keep gaining weight and my hair is falling out"
+Confirm yes
+Answer YES to: fatigue, cold intolerance, dry skin, constipation
+Answer NO to: fever, chills
+Expected Result: Hypothyroidism ~100%
+
+---
+
+Test 19 - Anemia
+Patient statement: "I feel dizzy all the time and my hands and feet are always cold"
+Confirm yes
+Answer YES to: fatigue, headache, pale skin, shortness of breath
+Answer NO to: fever, chills
+Expected Result: Anemia ~100%
+
+---
+
+Test 20 - Typhoid Fever
+Patient statement: "I have a fever and I noticed small rose-coloured spots on my stomach"
+Confirm yes
+Answer YES to: headache, fatigue, abdominal pain, slow heart rate
+Answer NO to: neck stiffness, sneezing, runny nose
+Expected Result: Typhoid Fever ~100%
+
+================================================================================
+EDGE CASE TESTS
+================================================================================
+
+Edge Case 1 - Migraine vs Meningitis (critical differentiator)
+Patient statement: "I have a severe headache and sensitivity to light"
+Confirm yes
+Answer YES to: neck stiffness, fever, confusion
+Answer NO to: pulsating pain, one sided pain, visual aura
+Expected Result: Meningitis (neck stiffness + fever eliminates migraine via hard rules)
+
+---
+
+Edge Case 2 - Tension Headache vs Migraine
+Patient statement: "I have a headache and feel tired"
+Confirm yes
+Answer YES to: dizziness, light sensitivity, neck stiffness
+Answer NO to: fever, vomiting, pulsating pain, one sided pain, visual aura
+Expected Result: Tension Headache (absence of aura and pulsating pain is the key split)
+
+---
+
+Edge Case 3 - Gastroenteritis vs Appendicitis (RLQ pain)
+Patient statement: "I have stomach pain and feel nauseous"
+Confirm yes
+Answer YES to: right lower quad pain, rebound tenderness, fever
+Answer NO to: diarrhea
+Expected Result: Appendicitis (diarrhea NO + RLQ pain eliminates gastroenteritis)
+
+---
+
+Edge Case 4 - TB vs Pneumonia (chronicity)
+Patient statement: "I have been coughing for weeks and I am losing weight"
+Confirm yes
+Answer YES to: night sweats, fatigue, low grade fever, chest pain
+Answer NO to: sudden onset, diarrhea
+Expected Result: Tuberculosis (chronic_cough + night_sweats + weight_loss distinguishes from pneumonia)
+
+---
+
+Edge Case 5 - Inconclusive (contradictory profile)
+Patient statement: "I have a fever and my hair is falling out"
+Confirm yes
+Answer NO to everything else asked
+Expected Result: Inconclusive (fever eliminates hypothyroidism; too few symptoms for any other disease)
