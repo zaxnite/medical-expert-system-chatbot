@@ -62,18 +62,27 @@
     ("recurrent fever"              . "cyclical_fever")
 
     ;; --- cough (shared by 4+ diseases — no label) ---
-    ("cough"                        . cough)
-    ("coughing"                     . cough)
-    ("dry cough"                    . cough)
-    ("coughs"                       . cough)
-    ("hacking cough"                . cough)
-    ("whooping cough"               . cough)
-    ("tussis"                       . cough)
-    ("cant stop coughing"           . cough)
-    ("keep coughing"                . cough)
-    ("tickly cough"                 . cough)
-    ("irritating cough"             . cough)
-    ("barking cough"                . cough)
+    ;; NOTE: "cough" and "coughing" are intentionally NOT listed as bare
+    ;; single-word phrases because string-contains-p would match them inside
+    ;; "productive cough", "chronic cough", "coughing up phlegm" etc.,
+    ;; causing the generic atom to fire alongside the specific one.
+    ;; Only phrases that cannot appear inside a more specific cough entry
+    ;; are listed here.
+    ("i have a cough"              . cough)
+    ("got a cough"                 . cough)
+    ("have a cough"                . cough)
+    ("dry cough"                   . cough)
+    ("hacking cough"               . cough)
+    ("whooping cough"              . cough)
+    ("tussis"                      . cough)
+    ("cant stop coughing"          . cough)
+    ("keep coughing"               . cough)
+    ("tickly cough"                . cough)
+    ("irritating cough"            . cough)
+    ("barking cough"               . cough)
+    ("coughs a lot"                . cough)
+    ("cough a lot"                 . cough)
+    ("non stop coughing"           . cough)
 
     ;; --- productive cough — Pneumonia / Tuberculosis ---
     ("productive cough"             . "productive_cough")
@@ -732,6 +741,11 @@
     ("constantly thirsty"           . "excessive_thirst")
     ("drink lots of water"          . "excessive_thirst")
     ("unquenchable thirst"          . "excessive_thirst")
+    ("thirsty"                      . "excessive_thirst")
+    ("so thirsty"                   . "excessive_thirst")
+    ("keep drinking water"          . "excessive_thirst")
+    ("drinking water all the time"  . "excessive_thirst")
+    ("thirst all the time"          . "excessive_thirst")
 
     ;; --- frequent urination — Diabetes T2 ---
     ("frequent urination"           . "frequent_urination")
@@ -745,6 +759,18 @@
     ("waking at night to urinate"   . "frequent_urination")
     ("nocturia"                     . "frequent_urination")
     ("passing lots of urine"        . "frequent_urination")
+    ("need to pee"                  . "frequent_urination")
+    ("need to urinate"              . "frequent_urination")
+    ("urge to pee"                  . "frequent_urination")
+    ("keep needing to pee"          . "frequent_urination")
+    ("keep needing to urinate"      . "frequent_urination")
+    ("bathroom a lot"               . "frequent_urination")
+    ("toilet a lot"                 . "frequent_urination")
+    ("going to bathroom often"      . "frequent_urination")
+    ("running to toilet"            . "frequent_urination")
+    ("always need to pee"           . "frequent_urination")
+    ("urinate frequently"           . "frequent_urination")
+    ("pee frequently"               . "frequent_urination")
 
     ;; --- blurred vision — Diabetes T2 ---
     ("blurred vision"               . "blurred_vision")

@@ -200,13 +200,18 @@ class ConsultationLog:
     def __init__(self):
         self._entries:   list[QAEntry] = []
         self._asked_set: set[str]      = set()  # O(1) duplicate check
+        self._intake_count: int        = 0      # entries from free-text intake
 
     # ---- logging ----
 
     def log(self, symptom: str, question_text: str,
-            answer: bool, candidates_remaining: int = 0) -> QAEntry:
+            answer: bool, candidates_remaining: int = 0,
+            from_intake: bool = False) -> QAEntry:
         """
         Record a single Q&A exchange.
+        from_intake=True marks this as a preloaded symptom from the
+        free-text phase — it is stored for the full record but is NOT
+        counted as a question asked by the system.
         Returns the created QAEntry for immediate use.
         """
         entry = QAEntry(
@@ -217,6 +222,8 @@ class ConsultationLog:
         )
         self._entries.append(entry)
         self._asked_set.add(symptom)
+        if from_intake:
+            self._intake_count += 1
         return entry
 
     # ---- queries ----
@@ -231,7 +238,13 @@ class ConsultationLog:
 
     @property
     def question_count(self) -> int:
+        """Total entries including free-text intake."""
         return len(self._entries)
+
+    @property
+    def asked_question_count(self) -> int:
+        """Only questions actually asked by the system (excludes intake)."""
+        return len(self._entries) - self._intake_count
 
     @property
     def yes_count(self) -> int:
@@ -326,10 +339,14 @@ class UserSession:
     # ---- convenience methods ----
 
     def record_answer(self, symptom: str, question_text: str,
-                      answer: bool, candidates_remaining: int = 0) -> None:
+                      answer: bool, candidates_remaining: int = 0,
+                      from_intake: bool = False) -> None:
         """
         Single call to update both MedicalRecord and ConsultationLog.
-        The interface layer calls this after every patient answer.
+        from_intake=True means this symptom came from the free-text
+        description phase — it is recorded in MedicalRecord (so
+        confirmed/denied lists are complete) but is NOT counted as
+        a question asked by the system in asked_question_count.
         """
         # Update medical record
         if answer:
@@ -338,7 +355,8 @@ class UserSession:
             self.record.record_no(symptom)
 
         # Update conversation log
-        self.log.log(symptom, question_text, answer, candidates_remaining)
+        self.log.log(symptom, question_text, answer, candidates_remaining,
+                     from_intake=from_intake)
 
     @property
     def is_active(self) -> bool:

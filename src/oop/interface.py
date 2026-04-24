@@ -98,6 +98,8 @@ def _print_result(data: dict):
     desc       = data.get("description", "")
     tests      = data.get("tests", [])
     conclusive = data.get("is_conclusive", False)
+    confirmed  = data.get("confirmed_symptoms", [])
+    other      = data.get("other_symptoms", [])
 
     print()
     print(_c(BORDER, CYAN))
@@ -126,6 +128,21 @@ def _print_result(data: dict):
     print()
     print(f"  {'About':<14}: {desc}")
 
+    # Symptoms you reported
+    if confirmed:
+        print()
+        print(_c("  Symptoms you reported:", BOLD))
+        for s in confirmed:
+            print(_c(f"    ✓  {s.replace('_', ' ').title()}", "\033[92m"))
+
+    # Other known symptoms of this disease the patient didn't confirm
+    if other:
+        print()
+        print(_c("  Other symptoms associated with this condition:", BOLD))
+        for s in other:
+            print(_c(f"    •  {s.replace('_', ' ').title()}", "\033[90m"))
+        print(_c("  If you experience any of the above, seek medical advice.", "\033[90m"))
+
     if tests:
         print()
         print(_c(f"  Recommended tests:", BOLD))
@@ -146,10 +163,14 @@ def _print_result(data: dict):
 def _print_session_summary(consultation: Consultation):
     session  = consultation.session
     log      = session.log
+    intake   = log._intake_count
+    asked    = log.asked_question_count
     _section("Consultation Summary")
     print(f"  Patient   : {session.patient_name}")
     print(f"  Session   : {session.session_id}")
-    print(f"  Questions : {log.question_count}")
+    print(f"  Questions : {asked}")
+    if intake > 0:
+        print(f"  From desc : {intake} symptom(s) from your description")
     print(f"  Confirmed : {', '.join(session.record.confirmed_symptoms) or 'none'}")
     print(f"  Denied    : {', '.join(session.record.denied_symptoms) or 'none'}")
     print()
@@ -407,20 +428,23 @@ class MedicalInterface:
             self._consultation.intake_complete()
             return []
 
-        # Record preloaded symptoms in session log
+        # Record preloaded symptoms in session log, flagged as intake
+        # so they appear in MedicalRecord but don't inflate question count
         for s in found:
             self._consultation._session.record_answer(
                 symptom       = s,
                 question_text = f"(from your description: {s.replace(chr(95),' ')})",
                 answer        = True,
-                candidates_remaining = self._candidates
+                candidates_remaining = self._candidates,
+                from_intake   = True
             )
         for s in negated:
             self._consultation._session.record_answer(
                 symptom       = s,
                 question_text = f"(from your description: no {s.replace(chr(95),' ')})",
                 answer        = False,
-                candidates_remaining = self._candidates
+                candidates_remaining = self._candidates,
+                from_intake   = True
             )
 
         total = len(found) + len(negated)

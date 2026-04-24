@@ -176,8 +176,6 @@ Test 9 - Gastroenteritis
 Free text: I have diarrhea and I have stomach cramps
 Symptoms detected: diarrhea, cramping
 
-  NOTE: "stomach cramps" now correctly maps to cramping (not
-  abdominal_pain) — the system detects cramping from free text.
 
 Symptoms to say YES to:
   - I feel nauseous                  [nausea]

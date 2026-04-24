@@ -176,16 +176,20 @@ class PrologBridge:
         # Ensure asked/1 is set so next_question skips this symptom
         list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
-        # 2. Early exit: if only 1 candidate remains and confidence >= 60%,
-        #    diagnose immediately — bypass min_confirmed_symptoms AND
-        #    diagnosis_threshold since we have certainty from elimination.
-        #    Build the result directly rather than going through consult_result/3
-        #    (which requires diagnosis/1 which checks the threshold again).
+        # 2. Early exit: if only 1 candidate remains, confidence >= 60%,
+        #    AND at least 3 of the confirmed symptoms actually belong to
+        #    that disease — prevents diagnosing on 2 generic shared symptoms
+        #    that happened to eliminate everything else by denial.
         candidates = list(self._prolog.query("candidate(D)"))
         if len(candidates) == 1:
             sole = str(candidates[0]["D"])
             conf_res = list(self._prolog.query(f"confidence({sole}, Pct)"))
-            if conf_res and float(conf_res[0]["Pct"]) >= 60.0:
+            # Count how many confirmed symptoms belong to this disease
+            matched = list(self._prolog.query(
+                f"symptom_of({sole}, S), symptom(S)"
+            ))
+            if (conf_res and float(conf_res[0]["Pct"]) >= 60.0
+                    and len(matched) >= 3):
                 return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
 
         # 3. Check if consultation is complete via normal criteria
@@ -221,33 +225,35 @@ class PrologBridge:
     def _build_early_exit_result(self, disease: str, confidence: float) -> dict:
         """
         Build a result dict for the early-exit case:
-        only 1 candidate remains with confidence >= 60%.
-        Bypasses diagnosis/1 and consult_result/3 which require
-        the full threshold check — we already have certainty
-        through hard-rule elimination.
+        only 1 candidate remains — all others eliminated by hard rules.
+        Uses actual symptom-match confidence (minimum 65%) rather than
+        hardcoding 100%, since being the only candidate doesn't mean the
+        patient has every symptom — it means nothing else fits.
         """
-        # Get recommended tests for this disease
-        tests_raw = list(self._prolog.query(
-            f"needs_tests({disease}, Tests)"
-        ))
+        tests_raw = list(self._prolog.query(f"needs_tests({disease}, Tests)"))
         tests = self._parse_tests(tests_raw[0]["Tests"]) if tests_raw else []
 
-        # Get description
-        desc_res = list(self._prolog.query(
-            f"disease_description({disease}, Desc)"
-        ))
+        desc_res = list(self._prolog.query(f"disease_description({disease}, Desc)"))
         if desc_res:
             desc = desc_res[0]["Desc"]
             description = desc.decode("utf-8") if isinstance(desc, bytes) else str(desc)
         else:
             description = ""
 
+        confirmed, other = self._get_symptom_summary(disease)
+
+        # Use real confidence but floor at 65% — being the sole remaining
+        # candidate means elimination certainty justifies a minimum boost
+        display_confidence = max(65.0, confidence)
+
         return {
-            "action":      "result",
-            "disease":     disease,
-            "confidence":  confidence,
-            "description": description,
-            "tests":       tests
+            "action":             "result",
+            "disease":            disease,
+            "confidence":         display_confidence,
+            "description":        description,
+            "tests":              tests,
+            "confirmed_symptoms": confirmed,
+            "other_symptoms":     other
         }
 
     def _build_result(self) -> dict:
@@ -271,26 +277,44 @@ class PrologBridge:
         confidence = float(row["Confidence"])
         raw_tests  = row["Tests"]
 
-        # Parse Tests — Prolog returns list of T-C compound terms
         tests = self._parse_tests(raw_tests)
 
-        # Also fetch human-readable description
-        desc_results = list(self._prolog.query(
-            f"disease_description({disease}, Desc)"
-        ))
+        desc_results = list(self._prolog.query(f"disease_description({disease}, Desc)"))
         if desc_results:
             desc = desc_results[0]["Desc"]
             description = desc.decode("utf-8") if isinstance(desc, bytes) else str(desc)
         else:
             description = ""
 
+        confirmed, other = self._get_symptom_summary(disease)
+
         return {
-            "action":      "result",
-            "disease":     disease,
-            "confidence":  confidence,
-            "description": description,
-            "tests":       tests
+            "action":             "result",
+            "disease":            disease,
+            "confidence":         confidence,
+            "description":        description,
+            "tests":              tests,
+            "confirmed_symptoms": confirmed,
+            "other_symptoms":     other
         }
+
+    def _get_symptom_summary(self, disease: str) -> tuple[list[str], list[str]]:
+        """
+        Returns two lists for the diagnosed disease:
+          confirmed — symptoms the patient reported (symptom_of + symptom/1)
+          other     — symptoms of the disease the patient did NOT confirm
+        """
+        all_symptoms = [
+            str(r["S"])
+            for r in self._prolog.query(f"symptom_of({disease}, S)")
+        ]
+        confirmed_set = {
+            str(r["S"])
+            for r in self._prolog.query("symptom(S)")
+        }
+        confirmed = [s for s in all_symptoms if s in confirmed_set]
+        other     = [s for s in all_symptoms if s not in confirmed_set]
+        return confirmed, other
 
     def _parse_tests(self, raw) -> list[dict]:
         """

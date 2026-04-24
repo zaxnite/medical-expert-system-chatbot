@@ -601,10 +601,24 @@ hard_rule(tension_headache, not(cyclical_fever)). % periodic fever = malaria
 % SECTION 3 — CANDIDATE FILTER
 % ================================================================
 
+% candidate(Disease):
+%   Disease must pass all four gates:
+%   1. It is a known disease (has a disease_group)
+%   2. No hard rule is violated by confirmed symptoms
+%   3. Patient has not denied a symptom that is fairly distinctive
+%      for this disease (shared by 4 or fewer diseases globally).
+%      Threshold raised from 2 to 4 — symptoms like vomiting (3 diseases)
+%      and sore_throat (2 diseases) are distinctive enough that denying
+%      them should eliminate diseases that require them.
+%   4. Patient has not denied a hallmark symptom (required_symptom/2)
+%      that is absolutely essential to the disease — diseases without
+%      their defining feature cannot be diagnosed.
+
 candidate(Disease) :-
     disease_group(Disease, _),
     \+ hard_rule_violated(Disease),
-    \+ denied_required_symptom(Disease).
+    \+ denied_required_symptom(Disease),
+    \+ denied_hallmark_symptom(Disease).
 
 hard_rule_violated(Disease) :-
     hard_rule(Disease, not(S)),
@@ -614,7 +628,40 @@ denied_required_symptom(Disease) :-
     denied(S),
     symptom_of(Disease, S),
     symptom_rarity(S, Count),
-    Count =< 2.
+    Count =< 4.
+
+% denied_hallmark_symptom(+Disease)
+% Eliminates a disease when the patient denies its single most
+% defining hallmark — a symptom so central that the disease
+% essentially cannot exist without it.
+denied_hallmark_symptom(Disease) :-
+    hallmark_symptom(Disease, S),
+    denied(S).
+
+% hallmark_symptom(+Disease, ?Symptom)
+% Each entry names a symptom that is the absolute defining feature
+% of that disease. Denying it eliminates the disease immediately.
+hallmark_symptom(influenza,           fever).
+hallmark_symptom(influenza,           sudden_onset).
+hallmark_symptom(pneumonia,           fever).
+hallmark_symptom(covid19,             fever).
+hallmark_symptom(dengue_fever,        fever).
+hallmark_symptom(dengue_fever,        severe_joint_pain).
+hallmark_symptom(malaria,             fever).
+hallmark_symptom(malaria,             chills).
+hallmark_symptom(appendicitis,        right_lower_quad_pain).
+hallmark_symptom(meningitis,          neck_stiffness).
+hallmark_symptom(meningitis,          fever).
+hallmark_symptom(strep_throat,        sore_throat).
+hallmark_symptom(strep_throat,        fever).
+hallmark_symptom(typhoid_fever,       fever).
+hallmark_symptom(tuberculosis,        chronic_cough).
+hallmark_symptom(chickenpox,          vesicular_rash).
+hallmark_symptom(chickenpox,          itchy_rash).
+hallmark_symptom(peptic_ulcer,        burning_epigastric_pain).
+hallmark_symptom(migraine,            headache).
+hallmark_symptom(migraine,            pulsating_pain).
+hallmark_symptom(tension_headache,    headache).
 
 % symptom_rarity: how many diseases share this symptom
 symptom_rarity(S, Count) :-
@@ -631,7 +678,8 @@ all_candidates(List) :-
 
 symptom_match_score(Disease, Score) :-
     findall(S, (symptom_of(Disease, S), symptom(S)), Matched),
-    length(Matched, Score).
+    sort(Matched, Deduped),   % sort/2 removes duplicates — prevents confidence > 100%
+    length(Deduped, Score).
 
 total_symptoms(Disease, Total) :-
     findall(S, symptom_of(Disease, S), All),
@@ -649,14 +697,19 @@ confidence(Disease, Pct) :-
 % ================================================================
 
 :- dynamic diagnosis_threshold/1.
-diagnosis_threshold(70).
+% Threshold lowered from 70% to 65% to match the early-exit
+% threshold in bridge.py. Having two different thresholds (65% for
+% early exit, 70% for normal diagnosis) caused cases where the
+% early exit fired at 65% but the full loop never diagnosed at 70%,
+% leading to inconsistent behaviour across consultation modes.
+diagnosis_threshold(65).
 
 diagnosis(Disease) :-
     candidate(Disease),
     confidence(Disease, Pct),
     diagnosis_threshold(Threshold),
     Pct >= Threshold,
-    min_confirmed_symptoms(3),
+    min_confirmed_symptoms(5),
     is_best_candidate(Disease, Pct).
 
 % Require at least 3 confirmed symptoms before any diagnosis
@@ -687,25 +740,59 @@ top_diagnoses(Top3) :-
 
 % ================================================================
 % SECTION 6 — NEXT QUESTION ENGINE
-% Greedy information-gain: pick symptom covering most candidates
+% Weighted scoring: balances breadth (coverage) with specificity.
+%
+% When candidates are many (>4), broad coverage questions narrow
+% the field fastest. When candidates are few (<=4), disease-specific
+% symptoms that only appear in those candidates are prioritised
+% because they have the highest diagnostic value at that point.
+%
+% Score formula:
+%   - Raw coverage = number of candidates that have this symptom
+%   - Specificity bonus: if ALL remaining candidates share the
+%     symptom, it scores as if it appears in 3 extra candidates
+%     (making it the top priority — confirming it seals the diagnosis)
+%   - Uniqueness boost: symptoms unique to 1 candidate get +2
+%     when fewer than 4 candidates remain (late-stage disambiguation)
 % ================================================================
 
 next_question(BestSymptom) :-
     all_candidates(Candidates),
     Candidates \= [],
-    findall(Count-S,
+    length(Candidates, TotalCandidates),
+    findall(Score-S,
         (
             member(D, Candidates),
             symptom_of(D, S),
             \+ asked(S),
             \+ symptom(S),
             \+ denied(S),
-            symptom_coverage(S, Candidates, Count)
+            symptom_coverage(S, Candidates, RawCount),
+            question_score(S, RawCount, TotalCandidates, Score)
         ),
     Pairs),
     Pairs \= [],
-    msort(Pairs, Sorted),
+    sort(Pairs, Sorted),          % sort/2 deduplicates ties deterministically
     last(Sorted, _-BestSymptom).
+
+% question_score(+Symptom, +RawCoverage, +TotalCandidates, -Score)
+% Computes weighted score for symptom selection.
+question_score(S, RawCount, TotalCandidates, Score) :-
+    % Bonus 1: if symptom covers ALL remaining candidates it is
+    % the most decisive question — guaranteed to confirm or rule out
+    ( RawCount =:= TotalCandidates
+    -> AllBonus = 3
+    ;  AllBonus = 0
+    ),
+    % Bonus 2: in late stage (<=4 candidates), unique symptoms
+    % (appearing in only 1 disease globally) get a priority boost
+    % so the engine asks the most specific question to close out
+    ( TotalCandidates =< 4
+    ->  symptom_rarity(S, GlobalCount),
+        ( GlobalCount =:= 1 -> UniqueBonus = 2 ; UniqueBonus = 0 )
+    ;   UniqueBonus = 0
+    ),
+    Score is RawCount + AllBonus + UniqueBonus.
 
 symptom_coverage(S, Candidates, Count) :-
     include(has_symptom(S), Candidates, Matching),
@@ -721,7 +808,11 @@ has_symptom(S, D) :- symptom_of(D, S).
 
 :- dynamic question_count/1.
 question_count(0).
-max_questions(15).
+% Raised from 15 to 20 — with 20 diseases and smarter elimination,
+% some cases (especially metabolic diseases like diabetes) need more
+% questions to reach a confident diagnosis since their symptoms are
+% shared broadly and only specific follow-ups distinguish them.
+max_questions(20).
 
 consultation_complete(diagnosed) :-
     asked(early_exit_flag), !.

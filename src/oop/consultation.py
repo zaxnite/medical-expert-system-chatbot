@@ -344,11 +344,24 @@ class Consultation:
                     self._bridge.assert_symptom(action["symptom"])
                     action = self._bridge.get_first_question()
                 
-                # If only one candidate disease remains, display diagnosis immediately
+                # If only one candidate remains, use the early-exit path.
+                # Still require >= 3 symptoms that actually belong to the
+                # disease — prevents firing on 2 generic symptoms that
+                # happened to eliminate everything else by denial.
                 if action.get("action") == "ask":
                     candidate_count = self._get_candidate_count()
                     if candidate_count == 1:
-                        action = self._bridge._build_result()
+                        candidates = list(self._bridge._prolog.query("candidate(D)"))
+                        sole = str(candidates[0]["D"])
+                        conf_res = list(self._bridge._prolog.query(
+                            f"confidence({sole}, Pct)"
+                        ))
+                        matched = list(self._bridge._prolog.query(
+                            f"symptom_of({sole}, S), symptom(S)"
+                        ))
+                        pct = float(conf_res[0]["Pct"]) if conf_res else 0.0
+                        if pct >= 60.0 and len(matched) >= 3:
+                            action = self._bridge._build_early_exit_result(sole, pct)
                 
                 self._handle_action(action)
 
@@ -418,9 +431,8 @@ class Consultation:
                 status = {"candidates": []}
             self._emit(ConsultationEvent.STATUS_UPDATE, status)
 
-            # Count only questions actually asked (not preloaded ones)
-            asked_count = self._session.log.question_count - len(self._preloaded) - len(self._preloaded_denied)
-            display_number = max(1, asked_count + 1)
+            # Use asked_question_count which already excludes intake entries
+            display_number = self._session.log.asked_question_count + 1
 
             # Emit question ready — interface layer displays it
             self._emit(ConsultationEvent.QUESTION_READY, {
@@ -459,13 +471,15 @@ class Consultation:
         self._session.complete(result)
 
         self._emit(ConsultationEvent.DIAGNOSIS_READY, {
-            "disease":          disease,
-            "confidence":       confidence,
-            "confidence_level": result.confidence_level.value,
-            "description":      desc,
-            "tests":            tests,
-            "is_conclusive":    is_conclusive,
-            "summary":          self._session.summary()
+            "disease":             disease,
+            "confidence":          confidence,
+            "confidence_level":    result.confidence_level.value,
+            "description":         desc,
+            "tests":               tests,
+            "is_conclusive":       is_conclusive,
+            "confirmed_symptoms":  action.get("confirmed_symptoms", []),
+            "other_symptoms":      action.get("other_symptoms", []),
+            "summary":             self._session.summary()
         })
 
         self._done_event.set()
@@ -515,7 +529,8 @@ class Consultation:
 
     @property
     def question_number(self) -> int:
-        return self._session.log.question_count + 1
+        """Next question number to display (excludes intake entries)."""
+        return self._session.log.asked_question_count + 1
 
     def get_progress(self) -> dict:
         """
@@ -529,7 +544,7 @@ class Consultation:
             pass
 
         return {
-            "questions_asked":   self._session.log.question_count,
+            "questions_asked":   self._session.log.asked_question_count,
             "candidates_left":   len(status.get("candidates", [])),
             "top_candidate":     status.get("top_candidate", "none"),
             "top_confidence":    min(100.0, status.get("top_confidence", 0.0)),

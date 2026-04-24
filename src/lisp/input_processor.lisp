@@ -166,9 +166,36 @@
      normalised text
        -> find-all-matches against *symptom-map*
        -> deduplicate
+       -> subsume-generic-symptoms (drop generic if specific matched)
        -> result list of atoms"
-  (deduplicate
-    (find-all-matches normalised-text *symptom-map*)))
+  (subsume-generic-symptoms
+    (deduplicate
+      (find-all-matches normalised-text *symptom-map*))))
+
+
+(defparameter *subsumption-map*
+  '(;; If specific fever matched, drop generic fever
+    (fever . ("low_grade_fever" "cyclical_fever"))
+    ;; If specific rash matched, drop generic skin_rash
+    ("skin_rash" . ("itchy_rash" "vesicular_rash" "rose_spot_rash")))
+  "Alist of (generic . (specific...)).
+   If ANY specific atom is present in the matched list, the generic is removed.
+   Cough is handled at the mapper level -- generic cough phrases are written
+   to not overlap with compound cough phrases.")
+
+
+(defun subsume-generic-symptoms (symptom-list)
+  "Remove generic symptom atoms when a more specific variant is present.
+   E.g. if chronic_cough is matched, cough is redundant and removed.
+   Pure function — uses REMOVE-IF with higher-order predicate."
+  (remove-if
+    #'(lambda (atom)
+        (let ((specifics (cdr (assoc atom *subsumption-map* :test #'equal))))
+          (and specifics
+               (some #'(lambda (specific)
+                          (member specific symptom-list :test #'equal))
+                     specifics))))
+    symptom-list))
 
 
 ;;; ================================================================
