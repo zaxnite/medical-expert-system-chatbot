@@ -57,7 +57,8 @@
     ("lethargy"                 . fatigue)
     ("lethargic"                . fatigue)
     ("sleepy"                   . fatigue)
-    ("drowsy"                   . fatigue)    ("asthenia"                . fatigue)
+    ("drowsy"                   . fatigue)    
+    ("asthenia"                . fatigue)
     ("adynamia"                . fatigue)    
 
     ;; --- headache ---

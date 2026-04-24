@@ -173,8 +173,10 @@ class PrologBridge:
             self.assert_symptom(symptom)
         else:
             self.deny_symptom(symptom)
-        # Ensure asked/1 is set so next_question skips this symptom
-        list(self._prolog.query(f"assertz(asked({symptom}))"))
+        # Ensure asked/1 is set so next_question skips this symptom.
+        # Must be module-qualified — diagnosis_rules:next_question/1 reads
+        # asked/1 from the diagnosis_rules namespace, not the global user namespace.
+        list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
         # 2. Check if consultation is complete
         done = list(self._prolog.query("consultation_complete(Reason)"))

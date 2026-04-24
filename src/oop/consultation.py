@@ -169,15 +169,26 @@ class Consultation:
         to_assert = result.get("to_assert", [])
         to_deny   = result.get("to_deny",   [])
 
-        # Pre-assert into Prolog engine and mark as asked
-        # so next_question/1 skips them in the Q&A loop
+        # Pre-assert into Prolog engine using module-qualified assertz.
+        # diagnosis_rules:next_question/1 reads asked/1 from its own
+        # module namespace — bare assertz goes to the global 'user'
+        # namespace and is invisible to next_question/1.
         for s in to_assert:
-            # Use bridge query — shares same Prolog engine context
-            self._bridge.query(f"assert_symptom({s})")
+            list(self._bridge._prolog.query(
+                f"assertz(diagnosis_rules:symptom({s}))"
+            ))
+            list(self._bridge._prolog.query(
+                f"assertz(diagnosis_rules:asked({s}))"
+            ))
             self._preloaded.append(s)
 
         for s in to_deny:
-            self._bridge.query(f"deny_symptom({s})")
+            list(self._bridge._prolog.query(
+                f"assertz(diagnosis_rules:denied({s}))"
+            ))
+            list(self._bridge._prolog.query(
+                f"assertz(diagnosis_rules:asked({s}))"
+            ))
             self._preloaded_denied.append(s)
 
         # Get source from a direct process_input call for reporting
@@ -192,19 +203,11 @@ class Consultation:
         """
         Called by the interface after free-text intake is done.
         Unblocks the reasoning thread to start asking questions.
-        Asserts symptoms AND marks them as asked so next_question
-        never re-asks them in the Q&A loop.
+
+        Note: preload_symptoms() already wrote symptom/1, denied/1, and
+        asked/1 into the diagnosis_rules module namespace. This method
+        only needs to set the gate event — no re-assertion needed.
         """
-        for s in self._preloaded:
-            # Use bridge.assert_symptom which handles asked/1 internally
-            self._bridge.assert_symptom(s)
-            # Belt-and-suspenders: also assert via direct query
-            self._bridge.query(f"assertz(asked({s}))")
-
-        for s in self._preloaded_denied:
-            self._bridge.deny_symptom(s)
-            self._bridge.query(f"assertz(asked({s}))")
-
         self._intake_ready.set()
 
     def start(self) -> None:
@@ -217,11 +220,14 @@ class Consultation:
         self._session.start()
         self._bridge.reset_session()
 
-        # Clear the intake gate — reasoning thread will wait
-        # until preload_symptoms() has finished and re-asserted facts
+        # Clear the intake gate — reasoning thread will wait until
+        # intake_complete() is called by the interface.
+        # DO NOT clear _preloaded / _preloaded_denied here.
+        # preload_symptoms() populates them before start() is called,
+        # and _get_next_skipping_preloaded() reads them to build the
+        # skip-set. Clearing them here empties that set and causes
+        # the bot to re-ask about symptoms the patient already described.
         self._intake_ready.clear()
-        self._preloaded.clear()
-        self._preloaded_denied.clear()
 
         # Launch reasoning on background thread
         self._reasoning_thread = threading.Thread(
