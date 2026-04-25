@@ -1,51 +1,41 @@
-# ================================================================
 # bridge.py
-# Medical Expert System — BCS 222 Programming Paradigms
-# Role: Low-level interface between Python and SWI-Prolog.
-#       Loads the Prolog files, exposes clean Python functions
-#       that the OOP layer calls. No business logic lives here.
-# ================================================================
+# Medical Expert System - BCS 222 Programming Paradigms
+# Connects Python to SWI-Prolog. Loads the Prolog files and exposes
+# clean functions the OOP layer calls. No business logic lives here.
 
 import os
 import ctypes
 from pathlib import Path
 from pyswip import Prolog, Functor, Variable, Atom
 
-# Increase SWI-Prolog stack limits before the engine initialises.
-# The default stack is too small for our 20-disease knowledge base
-# and causes an assertion failure in pl-fli.c on some systems.
-os.environ.setdefault("SWI_HOME_DIR", "")  # let pyswip find SWI
+# Increase stack before the engine starts.
+# Default stack is too small for 20 diseases and causes crashes on some systems.
+os.environ.setdefault("SWI_HOME_DIR", "")
 os.environ["SWIPL_STACK_LIMIT"] = "256m"
 
-# ----------------------------------------------------------------
-# PATH SETUP
-# ----------------------------------------------------------------
-
-# Resolve absolute path to the prolog directory so the bridge
-# works regardless of where Python is invoked from.
+# Resolve path to prolog/ so this works regardless of where Python is run from.
 _PROLOG_DIR = Path(__file__).parent.parent / "src" / "prolog"
 
 
 class PrologBridge:
     """
-    Singleton-style wrapper around the SWI-Prolog engine.
-    One instance is created per consultation session.
+    Wrapper around the SWI-Prolog engine.
+    One instance per consultation session.
 
-    Responsibilities:
-      - Load all three .pl files in the correct order
-      - Expose assert_symptom / deny_symptom / reset
-      - Expose next_question and consult_result
-      - Expose engine_status for the OOP monitoring thread
+    Handles:
+      - Loading all three .pl files in the right order
+      - assert_symptom / deny_symptom / reset
+      - next_question and consult_result
+      - engine_status for the OOP monitoring thread
     """
 
     def __init__(self, prolog_dir: Path = None):
-        # Pass stack/heap limits directly to SWI-Prolog at startup.
-        # Prevents assertion crash in pl-fli.c on Windows + pyswip.
+        # Set stack limit directly at startup to prevent crashes on Windows + pyswip.
         self._prolog = Prolog()
         try:
             list(self._prolog.query("set_prolog_flag(stack_limit, 256_000_000)"))
         except Exception:
-            pass  # older SWI versions use different flag names
+            pass  # older SWI versions use a different flag name
         self._dir = prolog_dir or _PROLOG_DIR
         self._loaded = False
 
@@ -55,8 +45,8 @@ class PrologBridge:
 
     def load(self) -> None:
         """
-        Load all Prolog source files into the engine.
-        Must be called once before any queries are made.
+        Load all Prolog files into the engine.
+        Must be called once before any queries.
         Order matters: knowledge_base -> diagnosis_rules -> inference_engine
         """
         if self._loaded:
@@ -74,7 +64,7 @@ class PrologBridge:
                     f"Prolog file not found: {pl_file}\n"
                     f"Check that PROLOG_DIR is correct: {self._dir}"
                 )
-            # Use consult/1 — standard Prolog file loader
+            # Use consult/1 - standard Prolog file loader
             path_str = str(pl_file).replace("\\", "/")  # Windows path fix
             list(self._prolog.query(f"consult('{path_str}')"))
 
@@ -91,7 +81,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def reset_session(self) -> None:
-        """Wipe all dynamic facts — starts a fresh consultation."""
+        """Wipe all dynamic facts and start fresh."""
         self._require_loaded()
         list(self._prolog.query("reset_session"))
 
@@ -121,7 +111,7 @@ class PrologBridge:
 
     def get_next_question(self) -> dict | None:
         """
-        Ask Prolog what the best next symptom to ask about is.
+        Ask Prolog what symptom to ask about next.
 
         Returns:
             {
@@ -167,19 +157,16 @@ class PrologBridge:
         """
         self._require_loaded()
 
-        # 1. Record patient answer (assert_symptom/deny_symptom
-        #    already marks symptom as asked internally)
+        # Record patient answer (assert_symptom/deny_symptom marks symptom as asked internally)
         if answer:
             self.assert_symptom(symptom)
         else:
             self.deny_symptom(symptom)
-        # Ensure asked/1 is set so next_question skips this symptom
+        # Mark as asked so next_question skips this symptom
         list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
-        # 2. Early exit: if only 1 candidate remains, confidence >= 60%,
-        #    AND at least 3 of the confirmed symptoms actually belong to
-        #    that disease — prevents diagnosing on 2 generic shared symptoms
-        #    that happened to eliminate everything else by denial.
+        # Early exit: if only 1 candidate remains with confidence >= 60%
+        # and at least 3 matching symptoms, stop asking to avoid unnecessary questions.
         candidates = list(self._prolog.query("candidate(D)"))
         if len(candidates) == 1:
             sole = str(candidates[0]["D"])
@@ -192,12 +179,12 @@ class PrologBridge:
                     and len(matched) >= 3):
                 return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
 
-        # 3. Check if consultation is complete via normal criteria
+        # Check if consultation is done by normal criteria
         done = list(self._prolog.query("consultation_complete(Reason)"))
         if done:
             return self._build_result()
 
-        # 3. Get next question — candidates already updated by step above
+        # 3. Get next question
         nq = self.get_next_question()
         if nq is None:
             return self._build_result()
@@ -208,8 +195,8 @@ class PrologBridge:
 
     def get_first_question(self) -> dict:
         """
-        Called at the very start of a consultation to get
-        the first question without processing any answer first.
+        Called at the start of a consultation to get the first question
+        without processing any answer first.
         """
         self._require_loaded()
         nq = self.get_next_question()
@@ -224,11 +211,9 @@ class PrologBridge:
 
     def _build_early_exit_result(self, disease: str, confidence: float) -> dict:
         """
-        Build a result dict for the early-exit case:
-        only 1 candidate remains — all others eliminated by hard rules.
-        Uses actual symptom-match confidence (minimum 65%) rather than
-        hardcoding 100%, since being the only candidate doesn't mean the
-        patient has every symptom — it means nothing else fits.
+        Build result when only 1 candidate remains.
+        Uses actual confidence (floored at 65%) rather than 100%,
+        since being the only candidate doesn't mean every symptom matched.
         """
         tests_raw = list(self._prolog.query(f"needs_tests({disease}, Tests)"))
         tests = self._parse_tests(tests_raw[0]["Tests"]) if tests_raw else []
@@ -242,8 +227,7 @@ class PrologBridge:
 
         confirmed, other = self._get_symptom_summary(disease)
 
-        # Use real confidence but floor at 65% — being the sole remaining
-        # candidate means elimination certainty justifies a minimum boost
+        # Floor at 65% - sole remaining candidate justifies a minimum confidence boost
         display_confidence = max(65.0, confidence)
 
         return {
@@ -257,9 +241,7 @@ class PrologBridge:
         }
 
     def _build_result(self) -> dict:
-        """
-        Internal — queries consult_result/3 and formats the output.
-        """
+        """Query consult_result/3 and format the output."""
         results = list(self._prolog.query(
             "consult_result(Disease, Confidence, Tests)"
         ))
@@ -301,8 +283,8 @@ class PrologBridge:
     def _get_symptom_summary(self, disease: str) -> tuple[list[str], list[str]]:
         """
         Returns two lists for the diagnosed disease:
-          confirmed — symptoms the patient reported (symptom_of + symptom/1)
-          other     — symptoms of the disease the patient did NOT confirm
+          confirmed - symptoms the patient reported
+          other     - symptoms of the disease the patient did NOT confirm
         """
         all_symptoms = [
             str(r["S"])
@@ -347,7 +329,7 @@ class PrologBridge:
     def get_status(self) -> dict:
         """
         Snapshot of current engine state.
-        Called by the OOP ConsultationLog to update session metadata.
+        Called by ConsultationLog to update session metadata.
 
         Returns:
             {
@@ -409,9 +391,8 @@ class PrologBridge:
 
     def query(self, prolog_query: str) -> list[dict]:
         """
-        Run any arbitrary Prolog query and return results as
-        a list of dicts. Used for testing and for predicates
-        not yet wrapped above.
+        Run any Prolog query and return results as a list of dicts.
+        Used for testing and predicates not yet wrapped above.
 
         Example:
             bridge.query("symptom_of(influenza, S)")

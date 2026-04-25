@@ -1,9 +1,9 @@
 :- encoding(utf8).
 % ================================================================
 % knowledge_base.pl
-% Medical Expert System — BCS 222 Programming Paradigms
-% Role: Declarative facts about diseases, symptoms, and tests.
-%       Pure data — no inference logic lives here.
+% Medical Expert System - BCS 222 Programming Paradigms
+% Declarative facts about diseases, symptoms, and tests.
+% Pure data - no inference logic lives here.
 % ================================================================
 
 :- module(knowledge_base, [
@@ -21,7 +21,7 @@
 
 
 % ================================================================
-% GROUP A — RESPIRATORY (3 diseases)
+% GROUP A - RESPIRATORY (3 diseases)
 % ================================================================
 
 disease_group(influenza,    respiratory).
@@ -57,7 +57,7 @@ test_required(pneumonia, blood_culture).
 
 
 % ================================================================
-% GROUP B — VIRAL / INFECTIOUS (3 diseases)
+% GROUP B - VIRAL / INFECTIOUS (3 diseases)
 % ================================================================
 
 disease_group(covid19,       viral_infectious).
@@ -97,7 +97,7 @@ test_required(malaria, rdt_malaria_test).
 
 
 % ================================================================
-% GROUP C — GASTROINTESTINAL (2 diseases)
+% GROUP C - GASTROINTESTINAL (2 diseases)
 % ================================================================
 
 disease_group(gastroenteritis, gastrointestinal).
@@ -122,7 +122,7 @@ test_required(appendicitis, elevated_wbc).
 
 
 % ================================================================
-% GROUP D — NEUROLOGICAL / ENT (3 diseases)
+% GROUP D - NEUROLOGICAL / ENT (3 diseases)
 % ================================================================
 
 disease_group(meningitis,   neurological_ent).
@@ -158,7 +158,7 @@ test_required(strep_throat, throat_culture).
 
 
 % ================================================================
-% GROUP E — METABOLIC / SYSTEMIC (4 diseases)
+% GROUP E - METABOLIC / SYSTEMIC (4 diseases)
 % ================================================================
 
 disease_group(diabetes_t2,    metabolic_systemic).
@@ -209,7 +209,7 @@ test_required(typhoid_fever, blood_culture).
 
 
 % ================================================================
-% GROUP A — RESPIRATORY (continued)
+% GROUP A - RESPIRATORY (continued)
 % ================================================================
 
 % --- Tuberculosis ---
@@ -227,7 +227,7 @@ test_required(tuberculosis, chest_xray).
 test_required(tuberculosis, tuberculin_test).
 
 % ================================================================
-% GROUP B — VIRAL / INFECTIOUS (continued)
+% GROUP B - VIRAL / INFECTIOUS (continued)
 % ================================================================
 
 % --- Chickenpox ---
@@ -243,7 +243,7 @@ test_required(chickenpox, tzanck_smear).
 test_required(chickenpox, varicella_pcr).
 
 % ================================================================
-% GROUP C — GASTROINTESTINAL (continued)
+% GROUP C - GASTROINTESTINAL (continued)
 % ================================================================
 
 % --- Peptic Ulcer Disease ---
@@ -267,7 +267,7 @@ test_required(irritable_bowel_syndrome, colonoscopy).
 test_required(irritable_bowel_syndrome, stool_analysis).
 
 % ================================================================
-% GROUP D — NEUROLOGICAL / ENT (continued)
+% GROUP D - NEUROLOGICAL / ENT (continued)
 % ================================================================
 
 % --- Tension Headache ---
@@ -277,10 +277,11 @@ symptom_of(tension_headache, dizziness).
 symptom_of(tension_headache, light_sensitivity).
 symptom_of(tension_headache, neck_stiffness).
 disease_group(tension_headache, neurological_ent).
-% No tests — tension headache is a clinical diagnosis
+% No tests - tension headache is a clinical diagnosis
+
 
 % ================================================================
-% SYMPTOM QUESTIONS — what the chatbot asks the patient
+% SYMPTOM QUESTIONS - what the chatbot asks the patient
 % ================================================================
 
 symptom_question(fever,               "Do you have a fever or feel unusually hot?").

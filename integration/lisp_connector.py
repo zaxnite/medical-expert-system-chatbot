@@ -1,12 +1,10 @@
-# ================================================================
 # lisp_connector.py
-# Medical Expert System — BCS 222 Programming Paradigms
-# Role: Python-to-Lisp bridge.
-#       Calls the Lisp input processor via SBCL subprocess,
-#       parses the result, and returns clean Python dicts
-#       to the consultation layer.
+# Medical Expert System - BCS 222 Programming Paradigms
+# Python-to-Lisp bridge.
+# Calls the Lisp input processor via SBCL subprocess,
+# parses the result, and returns clean Python dicts to the consultation layer.
 #
-# LISP ONLY — no Python fallback.
+# LISP ONLY - no Python fallback.
 #
 # Windows SBCL quirks this file works around:
 #   1. --script produces no stdout on Windows (pipe buffering issue)
@@ -15,8 +13,7 @@
 #      Fix: one --eval flag per top-level form
 #   3. Patient text cannot be passed via *posix-argv* reliably
 #      Fix: write text to a temp file, read it from Lisp with
-#           (with-open-file ...) — avoids all escaping/argv issues
-# ================================================================
+#           (with-open-file ...) to avoid all escaping/argv issues
 
 import os
 import subprocess
@@ -109,21 +106,19 @@ class LispConnector:
         Invoke SBCL using one --eval flag per expression.
 
         Why not --script?
-            On Windows, --script mode does not flush stdout to the
-            captured pipe — subprocess.run sees empty stdout even
-            when the Lisp code calls (write-line ...) and rc=0.
+            On Windows, --script mode does not flush stdout to the captured pipe.
+            subprocess.run sees empty stdout even when Lisp calls (write-line ...) and rc=0.
 
         Why not pass text via *posix-argv*?
-            On Windows, extra args after the script/eval flags are
-            not reliably available in *posix-argv*.
+            On Windows, extra args after the script/eval flags are not reliably
+            available in *posix-argv*.
 
-        Solution: write the patient text to a small temp file,
-        then read it inside Lisp with (with-open-file ...).
-        This avoids all escaping and argv issues entirely.
+        Solution: write the patient text to a temp file, then read it inside Lisp
+        with (with-open-file ...). This avoids all escaping and argv issues entirely.
         """
         txt_path = None
         try:
-            # ── Step 1: write patient text to a temp file ──────────
+            # Write patient text to a temp file
             with tempfile.NamedTemporaryFile(
                 mode="w", suffix=".txt",
                 dir=str(self._dir),
@@ -136,9 +131,8 @@ class LispConnector:
             processor_lp = self._lp(self._processor)
             txt_lp       = self._lp(Path(txt_path))
 
-            # ── Step 2: build --eval chain ─────────────────────────
-            # One expression per --eval flag — Windows SBCL requirement.
-            # Lisp reads the text from the temp file so no escaping needed.
+            # Build --eval chain - one expression per --eval flag (Windows SBCL requirement).
+            # Lisp reads the text from the temp file so no escaping is needed.
             evals = [
                 f'(load "{processor_lp}")',
 
@@ -159,7 +153,7 @@ class LispConnector:
             for expr in evals:
                 cmd += ["--eval", expr]
 
-            # ── Step 3: run ────────────────────────────────────────
+            # Run SBCL
             proc = subprocess.run(
                 cmd,
                 capture_output=True,

@@ -1,15 +1,13 @@
-# ================================================================
 # main.py
-# Medical Expert System — BCS 222 Programming Paradigms
-# Role: Application entry point.
-#       Wires OOP (Python), Logic (Prolog), and Functional (Lisp)
-#       layers together and launches the interface.
+# Medical Expert System - BCS 222 Programming Paradigms
+# Application entry point.
+# Wires OOP (Python), Logic (Prolog), and Functional (Lisp) layers together
+# and launches the interface.
 #
 # Run:
 #     python main.py
 #     python main.py --demo        (runs automated demo scenario)
 #     python main.py --test        (runs integration smoke test)
-# ================================================================
 
 import sys
 import time
@@ -52,7 +50,7 @@ def check_dependencies() -> dict:
         (PROLOG_DIR / f).exists() for f in prolog_files
     )
 
-    # Check Lisp (SBCL) availability — no fallback
+    # Check Lisp (SBCL) availability - no fallback
     try:
         from integration.lisp_connector import LispConnector
         conn = LispConnector(LISP_DIR)
@@ -117,7 +115,7 @@ def print_startup_banner(status: dict):
 
 def run_demo():
     """
-    Automated demo — simulates a flu patient answering questions.
+    Automated demo - simulates a flu patient answering questions.
     Shows the full system working without requiring user input.
     """
     print()
@@ -186,8 +184,7 @@ def run_demo():
 
 def run_tests():
     """
-    Quick integration smoke test — verifies all three layers
-    talk to each other correctly.
+    Quick integration smoke test - verifies all three layers talk to each other correctly.
     """
     print()
     print(BOLD + "  Running integration tests..." + RESET)
@@ -312,11 +309,11 @@ def main():
     status = check_dependencies()
     print_startup_banner(status)
 
-    # Abort if Prolog is missing — it is the core engine
+    # Abort if Prolog is missing - it is the core engine
     if not status["prolog"]:
         sys.exit(1)
 
-    # Abort if Lisp (SBCL) is missing — required for input processing
+    # Abort if Lisp (SBCL) is missing - required for input processing
     if not status["lisp"]:
         err = status.get("lisp_error", "SBCL not installed.")
         print(RED + f"  ERROR: {err}" + RESET)

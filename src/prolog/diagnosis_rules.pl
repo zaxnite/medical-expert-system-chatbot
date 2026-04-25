@@ -1,9 +1,9 @@
 :- encoding(utf8).
 % ================================================================
 % diagnosis_rules.pl
-% Medical Expert System — BCS 222 Programming Paradigms
-% Role: Inference engine — candidates, scoring, hard rules,
-%       next question selection, and final diagnosis output.
+% Medical Expert System - BCS 222 Programming Paradigms
+% Inference engine - candidates, scoring, hard rules,
+% next question selection, and final diagnosis output.
 % ================================================================
 
 :- module(diagnosis_rules, [
@@ -43,7 +43,7 @@
 
 
 % ================================================================
-% SECTION 1 — SESSION CONTROL
+% SECTION 1 - SESSION CONTROL
 % ================================================================
 
 assert_symptom(S) :-
@@ -63,7 +63,7 @@ reset_session :-
 
 
 % ================================================================
-% SECTION 2 — HARD RULES
+% SECTION 2 - HARD RULES
 % Each rule: if patient HAS this symptom, disease is ruled out.
 % Demonstrates negation-as-failure and closed-world assumption.
 % ================================================================
@@ -77,17 +77,17 @@ hard_rule(common_cold, not(vomiting)).
 hard_rule(common_cold, not(chills)).
 hard_rule(common_cold, not(diarrhea)).
 
-% --- Influenza: acute systemic — ruled out by GI-only symptoms ---
+% --- Influenza: acute systemic - ruled out by GI-only symptoms ---
 hard_rule(influenza, not(diarrhea)).
 hard_rule(influenza, not(neck_stiffness)).
-hard_rule(influenza, not(weight_gain)).           % acute illness — no chronic metabolic change
+hard_rule(influenza, not(weight_gain)).           % acute illness - no chronic metabolic change
 hard_rule(influenza, not(loss_of_smell)).         % anosmia is COVID-19 hallmark, not flu
-hard_rule(influenza, not(loss_of_taste)).         % same — COVID differentiator
+hard_rule(influenza, not(loss_of_taste)).         % same - COVID differentiator
 hard_rule(influenza, not(right_lower_quad_pain)). % surgical/GI sign, not respiratory
-hard_rule(influenza, not(rebound_tenderness)).    % peritoneal sign — incompatible
+hard_rule(influenza, not(rebound_tenderness)).    % peritoneal sign - incompatible
 hard_rule(influenza, not(excessive_thirst)).      % metabolic symptom, not acute viral
 
-% --- Pneumonia: respiratory — ruled out by non-respiratory dominance ---
+% --- Pneumonia: respiratory - ruled out by non-respiratory dominance ---
 hard_rule(pneumonia, not(diarrhea)).
 hard_rule(pneumonia, not(neck_stiffness)).
 hard_rule(pneumonia, not(weight_gain)).
@@ -161,7 +161,7 @@ hard_rule(meningitis, not(rebound_tenderness)).    % peritoneal sign
 hard_rule(meningitis, not(excessive_thirst)).      % metabolic sign
 hard_rule(meningitis, not(slow_heart_rate)).       % typhoid-specific
 
-% --- Migraine: pure neurological — no systemic or infectious ---
+% --- Migraine: pure neurological - no systemic or infectious ---
 hard_rule(migraine, not(fever)).
 hard_rule(migraine, not(neck_stiffness)).
 hard_rule(migraine, not(vomiting)).
@@ -208,9 +208,9 @@ hard_rule(hypothyroidism, not(severe_joint_pain)).     % dengue hallmark
 hard_rule(hypothyroidism, not(right_lower_quad_pain)). % surgical sign
 hard_rule(hypothyroidism, not(rebound_tenderness)).    % peritoneal sign
 hard_rule(hypothyroidism, not(skin_rash)).             % not a hypothyroidism feature
-% NOTE: slow_heart_rate NOT excluded — hypothyroidism can cause bradycardia
+% NOTE: slow_heart_rate NOT excluded - hypothyroidism can cause bradycardia
 
-% --- Anemia: chronic — no infection symptoms ---
+% --- Anemia: chronic - no infection symptoms ---
 hard_rule(anemia, not(fever)).
 hard_rule(anemia, not(vomiting)).
 hard_rule(anemia, not(neck_stiffness)).
@@ -312,11 +312,11 @@ hard_rule(tension_headache, not(skin_rash)).
 
 
 % ================================================================
-% SECTION 2B — EXTENDED HARD RULES (cross-disease elimination)
+% SECTION 2B - EXTENDED HARD RULES (cross-disease elimination)
 % New symptoms: vesicular_rash, itchy_rash, chronic_cough,
 %   night_sweats, weight_loss, haemoptysis, burning_epigastric_pain,
 %   pulsating_pain, visual_aura, one_sided_pain, rose_spot_rash
-%   (added with 5 new diseases — pathologist-verified)
+%   (added with 5 new diseases - pathologist-verified)
 % ================================================================
 
 % --- influenza (extended) ---
@@ -344,8 +344,8 @@ hard_rule(common_cold, not(vesicular_rash)). % chickenpox, not cold
 hard_rule(common_cold, not(haemoptysis)). % coughing blood = TB, not cold
 hard_rule(common_cold, not(pulsating_pain)). % migraine hallmark
 hard_rule(common_cold, not(visual_aura)). % migraine hallmark
-hard_rule(common_cold, not(chronic_cough)). % cold is self-limiting — not chronic
-hard_rule(common_cold, not(weight_gain)). % acute illness — no metabolic change
+hard_rule(common_cold, not(chronic_cough)). % cold is self-limiting - not chronic
+hard_rule(common_cold, not(weight_gain)). % acute illness - no metabolic change
 hard_rule(common_cold, not(weight_loss)). % cold does not cause weight loss
 hard_rule(common_cold, not(night_sweats)). % drenching night sweats = TB, not cold
 hard_rule(common_cold, not(burning_epigastric_pain)). % peptic ulcer sign, not cold
@@ -361,7 +361,7 @@ hard_rule(pneumonia, not(one_sided_pain)). % migraine pattern
 hard_rule(pneumonia, not(burning_epigastric_pain)). % peptic ulcer sign
 hard_rule(pneumonia, not(weight_loss)). % TB causes weight loss, not acute pneumonia
 hard_rule(pneumonia, not(night_sweats)). % drenching night sweats = TB hallmark
-hard_rule(pneumonia, not(chronic_cough)). % pneumonia is acute — chronic cough = TB
+hard_rule(pneumonia, not(chronic_cough)). % pneumonia is acute - chronic cough = TB
 
 % --- covid19 (extended) ---
 hard_rule(covid19, not(vesicular_rash)). % blistering rash = chickenpox
@@ -370,7 +370,7 @@ hard_rule(covid19, not(pulsating_pain)). % migraine hallmark
 hard_rule(covid19, not(visual_aura)). % migraine hallmark
 hard_rule(covid19, not(one_sided_pain)). % migraine pattern
 hard_rule(covid19, not(haemoptysis)). % coughing blood = TB, not COVID
-hard_rule(covid19, not(chronic_cough)). % COVID resolves — not chronic
+hard_rule(covid19, not(chronic_cough)). % COVID resolves - not chronic
 hard_rule(covid19, not(night_sweats)). % TB hallmark, not COVID
 hard_rule(covid19, not(weight_loss)). % significant weight loss = TB, not COVID
 hard_rule(covid19, not(burning_epigastric_pain)). % peptic ulcer sign
@@ -381,7 +381,7 @@ hard_rule(dengue_fever, not(pulsating_pain)). % migraine hallmark
 hard_rule(dengue_fever, not(visual_aura)). % migraine hallmark
 hard_rule(dengue_fever, not(one_sided_pain)). % migraine pattern
 hard_rule(dengue_fever, not(haemoptysis)). % TB hallmark
-hard_rule(dengue_fever, not(chronic_cough)). % dengue is acute — not chronic
+hard_rule(dengue_fever, not(chronic_cough)). % dengue is acute - not chronic
 hard_rule(dengue_fever, not(weight_loss)). % TB causes weight loss, not dengue
 hard_rule(dengue_fever, not(night_sweats)). % TB hallmark
 hard_rule(dengue_fever, not(burning_epigastric_pain)). % peptic ulcer sign
@@ -395,7 +395,7 @@ hard_rule(malaria, not(pulsating_pain)). % migraine hallmark
 hard_rule(malaria, not(visual_aura)). % migraine hallmark
 hard_rule(malaria, not(one_sided_pain)). % migraine pattern
 hard_rule(malaria, not(haemoptysis)). % TB hallmark
-hard_rule(malaria, not(chronic_cough)). % malaria is episodic — not chronic respiratory
+hard_rule(malaria, not(chronic_cough)). % malaria is episodic - not chronic respiratory
 hard_rule(malaria, not(weight_loss)). % significant weight loss = TB
 hard_rule(malaria, not(burning_epigastric_pain)). % peptic ulcer sign
 hard_rule(malaria, not(loss_of_taste)). % anosmia/ageusia = COVID
@@ -431,7 +431,7 @@ hard_rule(meningitis, not(vesicular_rash)). % chickenpox, not meningitis
 hard_rule(meningitis, not(itchy_rash)). % chickenpox, not meningitis
 hard_rule(meningitis, not(pulsating_pain)). % pulsating = migraine not meningitis headache
 hard_rule(meningitis, not(visual_aura)). % migraine hallmark
-hard_rule(meningitis, not(one_sided_pain)). % migraine pattern — meningitis headache is global
+hard_rule(meningitis, not(one_sided_pain)). % migraine pattern - meningitis headache is global
 hard_rule(meningitis, not(haemoptysis)). % TB hallmark
 hard_rule(meningitis, not(chronic_cough)). % not meningitis
 hard_rule(meningitis, not(weight_loss)). % TB hallmark
@@ -461,7 +461,7 @@ hard_rule(strep_throat, not(pulsating_pain)). % migraine hallmark
 hard_rule(strep_throat, not(visual_aura)). % migraine hallmark
 hard_rule(strep_throat, not(one_sided_pain)). % migraine pattern
 hard_rule(strep_throat, not(haemoptysis)). % TB hallmark
-hard_rule(strep_throat, not(chronic_cough)). % TB hallmark — strep is acute
+hard_rule(strep_throat, not(chronic_cough)). % TB hallmark - strep is acute
 hard_rule(strep_throat, not(weight_loss)). % TB hallmark
 hard_rule(strep_throat, not(night_sweats)). % TB hallmark
 hard_rule(strep_throat, not(neck_stiffness)). % meningeal sign
@@ -496,7 +496,7 @@ hard_rule(hypothyroidism, not(one_sided_pain)). % migraine pattern
 hard_rule(hypothyroidism, not(haemoptysis)). % TB hallmark
 hard_rule(hypothyroidism, not(chronic_cough)). % TB hallmark
 hard_rule(hypothyroidism, not(weight_loss)). % hypothyroidism causes weight GAIN not loss
-hard_rule(hypothyroidism, not(night_sweats)). % TB hallmark — hypothyroidism causes cold intolerance not sweating
+hard_rule(hypothyroidism, not(night_sweats)). % TB hallmark - hypothyroidism causes cold intolerance not sweating
 hard_rule(hypothyroidism, not(cyclical_fever)). % periodic fever = malaria
 hard_rule(hypothyroidism, not(rose_spot_rash)). % typhoid-specific
 hard_rule(hypothyroidism, not(burning_epigastric_pain)). % peptic ulcer sign
@@ -523,7 +523,7 @@ hard_rule(typhoid_fever, not(itchy_rash)). % chickenpox, not typhoid
 hard_rule(typhoid_fever, not(pulsating_pain)). % migraine hallmark
 hard_rule(typhoid_fever, not(visual_aura)). % migraine hallmark
 hard_rule(typhoid_fever, not(one_sided_pain)). % migraine pattern
-hard_rule(typhoid_fever, not(haemoptysis)). % TB hallmark — typhoid perforations present differently
+hard_rule(typhoid_fever, not(haemoptysis)). % TB hallmark - typhoid perforations present differently
 hard_rule(typhoid_fever, not(chronic_cough)). % TB hallmark
 hard_rule(typhoid_fever, not(weight_loss)). % significant weight loss = TB, not typhoid
 hard_rule(typhoid_fever, not(night_sweats)). % TB-specific drenching sweats, not typhoid
@@ -538,8 +538,8 @@ hard_rule(tuberculosis, not(visual_aura)). % migraine hallmark
 hard_rule(tuberculosis, not(one_sided_pain)). % migraine pattern
 hard_rule(tuberculosis, not(burning_epigastric_pain)). % peptic ulcer sign
 hard_rule(tuberculosis, not(weight_gain)). % TB causes weight LOSS not gain
-hard_rule(tuberculosis, not(excessive_thirst)). % metabolic sign — not TB
-hard_rule(tuberculosis, not(frequent_urination)). % metabolic sign — not TB
+hard_rule(tuberculosis, not(excessive_thirst)). % metabolic sign - not TB
+hard_rule(tuberculosis, not(frequent_urination)). % metabolic sign - not TB
 hard_rule(tuberculosis, not(blurred_vision)). % not a TB feature
 
 % --- chickenpox (extended) ---
@@ -547,11 +547,11 @@ hard_rule(chickenpox, not(pulsating_pain)). % migraine hallmark
 hard_rule(chickenpox, not(visual_aura)). % migraine hallmark
 hard_rule(chickenpox, not(one_sided_pain)). % migraine pattern
 hard_rule(chickenpox, not(haemoptysis)). % TB hallmark
-hard_rule(chickenpox, not(chronic_cough)). % TB hallmark — chickenpox is acute
+hard_rule(chickenpox, not(chronic_cough)). % TB hallmark - chickenpox is acute
 hard_rule(chickenpox, not(weight_loss)). % TB hallmark
 hard_rule(chickenpox, not(night_sweats)). % TB hallmark
 hard_rule(chickenpox, not(burning_epigastric_pain)). % peptic ulcer sign
-hard_rule(chickenpox, not(rose_spot_rash)). % typhoid-specific — distinct from chickenpox rash
+hard_rule(chickenpox, not(rose_spot_rash)). % typhoid-specific - distinct from chickenpox rash
 hard_rule(chickenpox, not(runny_nose)). % rhinorrhea not typical of chickenpox
 hard_rule(chickenpox, not(sneezing)). % not a chickenpox feature
 hard_rule(chickenpox, not(sudden_onset)). % chickenpox has 1-2 day prodrome, not truly sudden
@@ -562,7 +562,7 @@ hard_rule(peptic_ulcer, not(itchy_rash)). % chickenpox, not peptic ulcer
 hard_rule(peptic_ulcer, not(pulsating_pain)). % migraine hallmark
 hard_rule(peptic_ulcer, not(visual_aura)). % migraine hallmark
 hard_rule(peptic_ulcer, not(one_sided_pain)). % migraine pattern
-hard_rule(peptic_ulcer, not(haemoptysis)). % TB hallmark — haematemesis is different
+hard_rule(peptic_ulcer, not(haemoptysis)). % TB hallmark - haematemesis is different
 hard_rule(peptic_ulcer, not(chronic_cough)). % TB hallmark
 hard_rule(peptic_ulcer, not(weight_loss)). % TB hallmark; peptic ulcer = loss of appetite not major weight loss
 hard_rule(peptic_ulcer, not(rose_spot_rash)). % typhoid-specific
@@ -576,7 +576,7 @@ hard_rule(irritable_bowel_syndrome, not(pulsating_pain)). % migraine hallmark
 hard_rule(irritable_bowel_syndrome, not(visual_aura)). % migraine hallmark
 hard_rule(irritable_bowel_syndrome, not(one_sided_pain)). % migraine pattern
 hard_rule(irritable_bowel_syndrome, not(haemoptysis)). % TB hallmark
-hard_rule(irritable_bowel_syndrome, not(chronic_cough)). % TB hallmark — IBS is GI only
+hard_rule(irritable_bowel_syndrome, not(chronic_cough)). % TB hallmark - IBS is GI only
 hard_rule(irritable_bowel_syndrome, not(weight_loss)). % significant weight loss = TB or cancer, not IBS
 hard_rule(irritable_bowel_syndrome, not(cyclical_fever)). % periodic fever = malaria
 hard_rule(irritable_bowel_syndrome, not(rose_spot_rash)). % typhoid-specific
@@ -598,21 +598,19 @@ hard_rule(tension_headache, not(weight_loss)). % TB hallmark
 hard_rule(tension_headache, not(cyclical_fever)). % periodic fever = malaria
 
 % ================================================================
-% SECTION 3 — CANDIDATE FILTER
+% SECTION 3 - CANDIDATE FILTER
 % ================================================================
 
 % candidate(Disease):
 %   Disease must pass all four gates:
 %   1. It is a known disease (has a disease_group)
 %   2. No hard rule is violated by confirmed symptoms
-%   3. Patient has not denied a symptom that is fairly distinctive
-%      for this disease (shared by 4 or fewer diseases globally).
-%      Threshold raised from 2 to 4 — symptoms like vomiting (3 diseases)
-%      and sore_throat (2 diseases) are distinctive enough that denying
-%      them should eliminate diseases that require them.
-%   4. Patient has not denied a hallmark symptom (required_symptom/2)
-%      that is absolutely essential to the disease — diseases without
-%      their defining feature cannot be diagnosed.
+%   3. Patient has not denied a symptom shared by 4 or fewer diseases globally.
+%      Threshold raised from 2 to 4 - symptoms like vomiting (3 diseases)
+%      and sore_throat (2 diseases) are distinctive enough that denying them
+%      should eliminate diseases that require them.
+%   4. Patient has not denied a hallmark symptom - diseases without their
+%      defining feature cannot be diagnosed.
 
 candidate(Disease) :-
     disease_group(Disease, _),
@@ -631,16 +629,13 @@ denied_required_symptom(Disease) :-
     Count =< 4.
 
 % denied_hallmark_symptom(+Disease)
-% Eliminates a disease when the patient denies its single most
-% defining hallmark — a symptom so central that the disease
-% essentially cannot exist without it.
+% Eliminates a disease when the patient denies its defining hallmark.
 denied_hallmark_symptom(Disease) :-
     hallmark_symptom(Disease, S),
     denied(S).
 
 % hallmark_symptom(+Disease, ?Symptom)
-% Each entry names a symptom that is the absolute defining feature
-% of that disease. Denying it eliminates the disease immediately.
+% Denying this symptom eliminates the disease immediately.
 hallmark_symptom(influenza,           fever).
 hallmark_symptom(influenza,           sudden_onset).
 hallmark_symptom(pneumonia,           fever).
@@ -673,12 +668,12 @@ all_candidates(List) :-
 
 
 % ================================================================
-% SECTION 4 — SCORING
+% SECTION 4 - SCORING
 % ================================================================
 
 symptom_match_score(Disease, Score) :-
     findall(S, (symptom_of(Disease, S), symptom(S)), Matched),
-    sort(Matched, Deduped),   % sort/2 removes duplicates — prevents confidence > 100%
+    sort(Matched, Deduped),   % sort/2 removes duplicates - prevents confidence > 100%
     length(Deduped, Score).
 
 total_symptoms(Disease, Total) :-
@@ -693,15 +688,13 @@ confidence(Disease, Pct) :-
 
 
 % ================================================================
-% SECTION 5 — DIAGNOSIS
+% SECTION 5 - DIAGNOSIS
 % ================================================================
 
 :- dynamic diagnosis_threshold/1.
-% Threshold lowered from 70% to 65% to match the early-exit
-% threshold in bridge.py. Having two different thresholds (65% for
-% early exit, 70% for normal diagnosis) caused cases where the
-% early exit fired at 65% but the full loop never diagnosed at 70%,
-% leading to inconsistent behaviour across consultation modes.
+% Threshold lowered from 70% to 65% to match the early-exit threshold in bridge.py.
+% Having two different thresholds caused cases where the early exit fired at 65%
+% but the full loop never diagnosed at 70%, leading to inconsistent behaviour.
 diagnosis_threshold(65).
 
 diagnosis(Disease) :-
@@ -739,19 +732,17 @@ top_diagnoses(Top3) :-
 
 
 % ================================================================
-% SECTION 6 — NEXT QUESTION ENGINE
+% SECTION 6 - NEXT QUESTION ENGINE
 % Weighted scoring: balances breadth (coverage) with specificity.
 %
-% When candidates are many (>4), broad coverage questions narrow
-% the field fastest. When candidates are few (<=4), disease-specific
-% symptoms that only appear in those candidates are prioritised
+% When candidates are many (>4), broad coverage questions narrow the field fastest.
+% When candidates are few (<=4), disease-specific symptoms get priority
 % because they have the highest diagnostic value at that point.
 %
 % Score formula:
 %   - Raw coverage = number of candidates that have this symptom
-%   - Specificity bonus: if ALL remaining candidates share the
-%     symptom, it scores as if it appears in 3 extra candidates
-%     (making it the top priority — confirming it seals the diagnosis)
+%   - Specificity bonus: if ALL remaining candidates share the symptom,
+%     it scores as if it appears in 3 extra candidates (top priority)
 %   - Uniqueness boost: symptoms unique to 1 candidate get +2
 %     when fewer than 4 candidates remain (late-stage disambiguation)
 % ================================================================
@@ -779,14 +770,13 @@ next_question(BestSymptom) :-
 % Computes weighted score for symptom selection.
 question_score(S, RawCount, TotalCandidates, Score) :-
     % Bonus 1: if symptom covers ALL remaining candidates it is
-    % the most decisive question — guaranteed to confirm or rule out
+    % the most decisive question - guaranteed to confirm or rule out
     ( RawCount =:= TotalCandidates
     -> AllBonus = 3
     ;  AllBonus = 0
     ),
     % Bonus 2: in late stage (<=4 candidates), unique symptoms
     % (appearing in only 1 disease globally) get a priority boost
-    % so the engine asks the most specific question to close out
     ( TotalCandidates =< 4
     ->  symptom_rarity(S, GlobalCount),
         ( GlobalCount =:= 1 -> UniqueBonus = 2 ; UniqueBonus = 0 )
@@ -803,15 +793,13 @@ has_symptom(S, D) :- symptom_of(D, S).
 
 
 % ================================================================
-% SECTION 7 — CONSULTATION LOOP CONTROL
+% SECTION 7 - CONSULTATION LOOP CONTROL
 % ================================================================
 
 :- dynamic question_count/1.
 question_count(0).
-% Raised from 15 to 20 — with 20 diseases and smarter elimination,
-% some cases (especially metabolic diseases like diabetes) need more
-% questions to reach a confident diagnosis since their symptoms are
-% shared broadly and only specific follow-ups distinguish them.
+% Raised from 15 to 20 - with 20 diseases, metabolic diseases like diabetes
+% need more questions since their symptoms are broadly shared.
 max_questions(20).
 
 consultation_complete(diagnosed) :-
@@ -835,7 +823,7 @@ increment_question_count :-
 
 
 % ================================================================
-% SECTION 8 — OUTPUT PREDICATES
+% SECTION 8 - OUTPUT PREDICATES
 % ================================================================
 
 needs_tests(Disease, Tests) :-

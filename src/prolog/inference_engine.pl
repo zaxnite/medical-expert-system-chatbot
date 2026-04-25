@@ -1,10 +1,10 @@
 :- encoding(utf8).
 % ================================================================
 % inference_engine.pl
-% Medical Expert System — BCS 222 Programming Paradigms
-% Role: Drives the consultation loop. Decides when to ask,
-%       when to stop, and how to present the final result.
-%       This file is the ONLY one called directly by Python.
+% Medical Expert System - BCS 222 Programming Paradigms
+% Drives the consultation loop. Decides when to ask, when to stop,
+% and how to present the final result.
+% This file is the ONLY one called directly by Python.
 % ================================================================
 
 :- module(inference_engine, [
@@ -41,7 +41,7 @@
     asked/1
 ]).
 
-% SECTION 1 — ENTRY POINT
+% SECTION 1 - ENTRY POINT
 % run_consultation/0
 % Called by Python bridge to start a fresh consultation.
 % Resets all dynamic state then enters the loop.
@@ -59,10 +59,10 @@ print_greeting :-
     writeln('============================================'),
     nl.
 
-% SECTION 2 — CONSULTATION LOOP
+% SECTION 2 - CONSULTATION LOOP
 % consultation_loop/0
-% Recursive loop — base cases first, recursive case last.
-% Prolog evaluates clauses top-to-bottom so the exit conditions
+% Recursive loop - base cases first, recursive case last.
+% Prolog evaluates clauses top-to-bottom so exit conditions
 % are checked BEFORE asking another question.
 
 consultation_loop :-
@@ -71,7 +71,7 @@ consultation_loop :-
 
 consultation_loop :-
     ask_next,
-    consultation_loop.   % tail-recursive — keeps looping
+    consultation_loop.   % tail-recursive - keeps looping
 
 % handle_completion(+Reason)
 % Routes to the correct output handler based on why we stopped.
@@ -79,10 +79,9 @@ handle_completion(diagnosed)        :- present_result.
 handle_completion(max_questions)     :- present_result.
 handle_completion(no_questions_left) :- present_result.
 
-% SECTION 3 — ASK NEXT QUESTION
+% SECTION 3 - ASK NEXT QUESTION
 % ask_next/0
-% Gets the best symptom to ask from diagnosis_rules,
-% retrieves its human-readable question text,
+% Gets the best symptom from diagnosis_rules, retrieves its question text,
 % reads the patient's answer, and processes it.
 
 ask_next :-
@@ -102,8 +101,7 @@ ask_question(Text, Symptom) :-
     process_answer(Symptom, Answer).
 
 % show_candidate_count/0
-% Shows patient how many diseases are still being considered.
-% Good UX — lets patient see the system narrowing down.
+% Shows the patient how many diseases are still being considered.
 show_candidate_count :-
     all_candidates(List),
     length(List, N),
@@ -132,13 +130,12 @@ process_answer(Symptom, yes) :-
 
 process_answer(Symptom, no) :-
     deny_symptom(Symptom).
-% SECTION 4 — EARLY EXIT OPTIMISATION
+% SECTION 4 - EARLY EXIT OPTIMISATION
 % check_early_exit/0
-% After every YES answer, check if we already have a confident
-% single diagnosis. If so, cut the loop short immediately.
-% This prevents asking unnecessary questions — if the patient
-% confirms loss_of_smell + loss_of_taste + fever, we know
-% it is COVID-19 without asking all 15 questions.
+% After every YES answer, check if we already have a confident single diagnosis.
+% This prevents asking unnecessary questions - if the patient confirms
+% loss_of_smell + loss_of_taste + fever, we know it is COVID-19 without
+% asking all 15 questions.
 
 check_early_exit :-
     all_candidates(Candidates),
@@ -151,17 +148,17 @@ check_early_exit :-
 check_early_exit.  % silent success if conditions not met
 
 % early_exit_flag is checked inside diagnosis_rules:consultation_complete
-% via the asked/1 dynamic fact — no redefinition needed here
-%SECTION 5 — STEP MODE (for Python bridge)
+% via the asked/1 dynamic fact - no redefinition needed here
+%SECTION 5 - STEP MODE (for Python bridge)
 % run_consultation_step(+Symptom, +Answer, -NextAction)
 % Single-step interface for the Python OOP layer.
 % Instead of running the full loop in Prolog, Python calls
-% this once per question — enabling the threaded architecture.
+% this once per question - enabling the threaded architecture.
 %
 % NextAction is one of:
-%   ask(Symptom, QuestionText)   — ask the patient this next
-%   result(Disease, Pct, Tests)  — consultation complete
-%   inconclusive(Top3, Tests)    — no clear winner
+%   ask(Symptom, QuestionText)   - ask the patient this next
+%   result(Disease, Pct, Tests)  - consultation complete
+%   inconclusive(Top3, Tests)    - no clear winner
 
 run_consultation_step(Symptom, Answer, NextAction) :-
     process_answer(Symptom, Answer),   % record patient answer
@@ -180,8 +177,8 @@ determine_next_action(ask(S, Text)) :-
     increment_question_count.
 
 determine_next_action(result(insufficient_data, 0, [])).
-% fallthrough — no questions left and no diagnosis
-% SECTION 6 — RESULT PRESENTATION
+% fallthrough - no questions left and no diagnosis
+% SECTION 6 - RESULT PRESENTATION
 % present_result/0
 % Formats and prints the final output to stdout.
 % Python can also parse this via the bridge.
@@ -222,7 +219,7 @@ print_symptoms_summary(Disease) :-
     format("   Matched   : ~w~n", [Matched]).
 
 % print_tests(+Tests)
-% Prints required confirmatory tests with what they confirm.
+% Prints recommended confirmatory tests.
 print_tests([]) :-
     writeln('   Tests     : None required — clinical diagnosis.').
 print_tests(Tests) :-
@@ -233,7 +230,7 @@ print_tests(Tests) :-
     ).
 
 % present_inconclusive(+Top3)
-% When no clear winner — show top 3 and suggest tests.
+% When no clear winner - show top 3 and suggest tests.
 present_inconclusive(Top3) :-
     nl,
     writeln('============================================'),
@@ -246,7 +243,7 @@ present_inconclusive(Top3) :-
     writeln('   Please visit a doctor for further testing.'),
     writeln('============================================').
 
-% print_disclaimer/0 — important for a medical system
+% print_disclaimer/0 - important for a medical system
 print_disclaimer :-
     nl,
     writeln('   DISCLAIMER: This is not a substitute for'),
@@ -255,10 +252,9 @@ print_disclaimer :-
     writeln('============================================'),
     nl.
 
-%SECTION 7 — ENGINE STATUS (for Python monitoring)
+%SECTION 7 - ENGINE STATUS (for Python monitoring)
 % engine_status(-Status)
 % Called by Python at any point to get a snapshot of engine state.
-% Returns a structured term Python can parse easily.
 
 engine_status(status(
     candidates    : Candidates,

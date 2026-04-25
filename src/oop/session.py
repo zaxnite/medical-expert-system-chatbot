@@ -1,18 +1,12 @@
-# ================================================================
 # session.py
-# Medical Expert System — BCS 222 Programming Paradigms
-# Role: OOP state management layer.
-#       Defines UserSession, MedicalRecord, and ConsultationLog.
-#       These classes handle ALL persistence of conversation state
-#       so Prolog stays stateless between Python calls.
+# Medical Expert System - BCS 222 Programming Paradigms
+# OOP state management layer.
+# Defines UserSession, MedicalRecord, and ConsultationLog.
+# These classes hold all conversation state so Prolog stays stateless between calls.
 #
-# Paradigm justification:
-#   OOP is ideal here because we need mutable, identity-tracked
-#   objects that persist across many method calls. A patient
-#   session has identity (who is this patient?), state (what
-#   symptoms have been confirmed?), and behaviour (log a Q&A,
-#   export a report). These are exactly the things classes model.
-# ================================================================
+# OOP fits here because we need mutable objects with identity that persist
+# across many method calls. A session has identity (who is this patient?),
+# state (what symptoms were confirmed?), and behaviour (log a Q&A, export a report).
 
 from __future__ import annotations
 from dataclasses import dataclass, field
@@ -24,7 +18,7 @@ import json
 
 
 # ----------------------------------------------------------------
-# ENUMS — session and diagnosis states
+# ENUMS
 # ----------------------------------------------------------------
 
 class SessionState(Enum):
@@ -54,20 +48,20 @@ class ConfidenceLevel(Enum):
 
 
 # ----------------------------------------------------------------
-# DATACLASSES — lightweight immutable records
+# DATACLASSES
 # ----------------------------------------------------------------
 
 @dataclass
 class QAEntry:
     """
     A single question-answer exchange in the consultation.
-    Immutable record — once logged it is never modified.
+    Immutable once logged - never modified after creation.
     """
-    symptom:       str            # Prolog atom e.g. 'fever'
-    question_text: str            # Human-readable question shown to patient
-    answer:        bool           # True = yes, False = no
+    symptom:       str
+    question_text: str
+    answer:        bool
     timestamp:     datetime = field(default_factory=datetime.now)
-    candidates_remaining: int = 0  # how many diseases were still possible
+    candidates_remaining: int = 0  # how many diseases were still possible at this point
 
     def to_dict(self) -> dict:
         return {
@@ -109,17 +103,16 @@ class DiagnosisResult:
 
 
 # ----------------------------------------------------------------
-# MEDICAL RECORD — patient symptom tracking
+# MEDICAL RECORD
 # ----------------------------------------------------------------
 
 class MedicalRecord:
     """
     Tracks the patient's confirmed and denied symptoms.
-    Acts as the source of truth for what the patient has reported.
+    This is the source of truth for what the patient has reported.
 
-    Separated from ConsultationLog deliberately — symptom data
-    is clinical information, Q&A history is conversational data.
-    They have different lifetimes and export formats.
+    Kept separate from ConsultationLog because symptom data is clinical
+    and Q&A history is conversational - they have different lifetimes and formats.
     """
 
     def __init__(self, patient_name: str):
@@ -184,17 +177,14 @@ class MedicalRecord:
 
 
 # ----------------------------------------------------------------
-# CONSULTATION LOG — full conversation history
+# CONSULTATION LOG
 # ----------------------------------------------------------------
 
 class ConsultationLog:
     """
     Records every Q&A exchange in the consultation.
-    Ensures the chatbot never asks the same question twice
-    by tracking which symptoms have already been addressed.
-
-    This is the primary object the interface layer queries
-    when building the chat display.
+    Prevents the chatbot from asking the same question twice
+    by tracking which symptoms have already been covered.
     """
 
     def __init__(self):
@@ -209,10 +199,9 @@ class ConsultationLog:
             from_intake: bool = False) -> QAEntry:
         """
         Record a single Q&A exchange.
-        from_intake=True marks this as a preloaded symptom from the
-        free-text phase — it is stored for the full record but is NOT
-        counted as a question asked by the system.
-        Returns the created QAEntry for immediate use.
+        from_intake=True means the symptom came from free-text - it is stored
+        in the full record but not counted as a system question in asked_question_count.
+        Returns the created QAEntry.
         """
         entry = QAEntry(
             symptom               = symptom,
@@ -229,7 +218,7 @@ class ConsultationLog:
     # ---- queries ----
 
     def already_asked(self, symptom: str) -> bool:
-        """O(1) check — has this symptom already been asked?"""
+        """O(1) check - has this symptom already been asked?"""
         return symptom in self._asked_set
 
     @property
@@ -243,7 +232,7 @@ class ConsultationLog:
 
     @property
     def asked_question_count(self) -> int:
-        """Only questions actually asked by the system (excludes intake)."""
+        """Only questions asked by the system (excludes intake)."""
         return len(self._entries) - self._intake_count
 
     @property
@@ -277,7 +266,7 @@ class ConsultationLog:
 
 
 # ----------------------------------------------------------------
-# USER SESSION — the top-level session object
+# USER SESSION
 # ----------------------------------------------------------------
 
 class UserSession:
@@ -286,14 +275,9 @@ class UserSession:
     Owns the MedicalRecord and ConsultationLog.
     Tracks lifecycle state and timing.
 
-    The Python interface layer creates one UserSession per
-    consultation and passes it to the Consultation controller.
-    The Prolog bridge is also held here so the controller
-    can call reset_session() cleanly on a new consultation.
-
-    This class is the direct answer to the assignment's
-    requirement: 'OOP handles the persistence of the
-    conversation' — this is that persistence layer.
+    The interface layer creates one UserSession per consultation and passes it
+    to the Consultation controller. This is the persistence layer the assignment
+    requires - OOP handles all conversation state here.
     """
 
     def __init__(self, patient_name: str, patient_age: Optional[int] = None):
@@ -306,7 +290,7 @@ class UserSession:
         self.record:  MedicalRecord  = MedicalRecord(patient_name)
         self.log:     ConsultationLog = ConsultationLog()
 
-        # Diagnosis result — None until consultation completes
+        # None until consultation completes
         self.result: Optional[DiagnosisResult] = None
 
         # Timing
@@ -343,10 +327,8 @@ class UserSession:
                       from_intake: bool = False) -> None:
         """
         Single call to update both MedicalRecord and ConsultationLog.
-        from_intake=True means this symptom came from the free-text
-        description phase — it is recorded in MedicalRecord (so
-        confirmed/denied lists are complete) but is NOT counted as
-        a question asked by the system in asked_question_count.
+        from_intake=True means this symptom came from the free-text phase -
+        it goes into MedicalRecord but is NOT counted in asked_question_count.
         """
         # Update medical record
         if answer:
@@ -372,7 +354,7 @@ class UserSession:
     # ---- export / reporting ----
 
     def to_dict(self) -> dict:
-        """Full session export — used for the report and saving logs."""
+        """Full session export used for reports and saving logs."""
         return {
             "session_id":   self.session_id,
             "patient_name": self.patient_name,
