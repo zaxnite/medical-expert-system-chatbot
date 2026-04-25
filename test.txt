@@ -2,286 +2,287 @@ MEDICAL EXPERT SYSTEM - TEST SCENARIOS
 All 20 Diseases | BCS 222 Programming Paradigms
 ============================================================
 
-HOW TO USE:
-  1. Type the Free text into the symptom description prompt
-  2. Confirm detected symptoms with 'yes'
-  3. Answer each question YES or NO exactly as listed
-  4. Every symptom for the disease is accounted for
-
-NOTE ON FREE TEXT:
-  The phrases in "Free text" are taken directly from the symptom
-  mapper. Type them exactly as shown for guaranteed detection.
-  The "Symptoms detected" line shows which Prolog atoms will be
-  asserted into the engine before yes/no questions begin.
-
 ============================================================
-GROUP A - RESPIRATORY
+GROUP A - RESPIRATORY  (4 diseases)
 ============================================================
 
-Test 1 - Influenza
-----------------------------------------
+Test 1 — Influenza
+------------------------------------------------------------
 Free text: I have body aches and muscle pain and it came on suddenly
 Symptoms detected: body_aches, sudden_onset
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a cough                   [cough]
-  - I feel tired and weak            [fatigue]
-  - I have a headache                [headache]
-  - I have chills and shivering      [chills]
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    cough          "Do you have a cough?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    headache       "Do you have a headache?"
+    chills         "Are you experiencing chills or shivering?"
 
-Expected: Influenza - 100% confidence
+  Say NO to:  (nothing required — hard rules handle elimination)
+
+  Expected result:  Influenza — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 2 - Common Cold
-----------------------------------------
+Test 2 — Common Cold
+------------------------------------------------------------
 Free text: I have a runny nose and I keep sneezing
 Symptoms detected: runny_nose, sneezing
 
-Symptoms to say YES to:
-  - I have a cough                   [cough]
-  - I have a sore throat             [sore_throat]
-  - I feel tired and weak            [fatigue]
+  Say YES to:
+    cough          "Do you have a cough?"
+    sore_throat    "Do you have a sore or painful throat?"
+    fatigue        "Are you feeling unusually tired or weak?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
-  - I have chills and shivering      [chills]
-  - I have body aches and muscle pain [body_aches]
+  Say NO to:
+    fever          "Do you have a fever or feel unusually hot?"
+    chills         "Are you experiencing chills or shivering?"
+    body_aches     "Do you have aching muscles or body pain?"
 
-Expected: Common Cold - 100% confidence
+  Expected result:  Common Cold — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 3 - Pneumonia
-----------------------------------------
+Test 3 — Pneumonia
+------------------------------------------------------------
 Free text: I am breathless and I have chest pain
 Symptoms detected: difficulty_breathing, chest_pain
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a cough                   [cough]
-  - I feel tired and weak            [fatigue]
-  - I am coughing up phlegm          [productive_cough]
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    cough          "Do you have a cough?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    productive_cough "Are you coughing up mucus or phlegm?"
 
-Expected: Pneumonia - 100% confidence
+  Say NO to:  (nothing required)
+
+  Expected result:  Pneumonia — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 4 - Tuberculosis
-----------------------------------------
+Test 4 — Tuberculosis
+------------------------------------------------------------
 Free text: I have had a persistent cough for weeks and I wake up drenched in sweat at night
 Symptoms detected: chronic_cough, night_sweats
 
-Symptoms to say YES to:
-  - I am coughing up phlegm          [productive_cough]
-  - I have been losing weight without trying [weight_loss]
-  - I feel tired and weak            [fatigue]
-  - I have a mild fever              [low_grade_fever]
-  - I have chest pain                [chest_pain]
-  - I have been coughing up blood    [haemoptysis]
+  Say YES to:
+    productive_cough  "Are you coughing up mucus or phlegm?"
+    weight_loss       "Have you lost weight recently without trying?"
+    fatigue           "Are you feeling unusually tired or weak?"
+    low_grade_fever   "Do you have a mild persistent low-grade fever?"
+    chest_pain        "Do you have pain or tightness in your chest?"
+    haemoptysis       "Have you coughed up blood or blood-stained mucus?"
 
-Symptoms to say NO to:
-  - it came on suddenly              [sudden_onset]
+  Say NO to:
+    sudden_onset   "Did your symptoms come on very suddenly?"
 
-Expected: Tuberculosis - 100% confidence
+  Expected result:  Tuberculosis — 100.0% confidence
+ 
 
 ============================================================
-GROUP B - VIRAL / INFECTIOUS
+GROUP B - VIRAL / INFECTIOUS  (4 diseases)
 ============================================================
 
-Test 5 - COVID-19
-----------------------------------------
+Test 5 — COVID-19
+------------------------------------------------------------
 Free text: I lost my sense of smell and I lost my sense of taste
 Symptoms detected: loss_of_smell, loss_of_taste
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a cough                   [cough]
-  - I feel tired and weak            [fatigue]
-  - I am short of breath             [shortness_of_breath]
+  Say YES to:
+    fever              "Do you have a fever or feel unusually hot?"
+    cough              "Do you have a cough?"
+    fatigue            "Are you feeling unusually tired or weak?"
+    shortness_of_breath "Do you feel short of breath easily?"
 
-Symptoms to say NO to:
-  - my fever comes and goes          [cyclical_fever]
-  - I have severe joint pain         [severe_joint_pain]
+  Say NO to:
+    cyclical_fever     "Does your fever come and go in regular cycles?"
+    severe_joint_pain  "Do you have severe pain in your joints?"
 
-Expected: COVID-19 - 100% confidence
+  Expected result:  COVID-19 — 100.0% confidence
+
 
 ------------------------------------------------------------
 
-Test 6 - Dengue Fever
-----------------------------------------
+Test 6 — Dengue Fever
+------------------------------------------------------------
 Free text: I have severe joint pain and I have a rash
 Symptoms detected: severe_joint_pain, skin_rash
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a headache                [headache]
-  - I feel tired and weak            [fatigue]
-  - I have pain behind my eyes       [pain_behind_eyes]
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    headache       "Do you have a headache?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    pain_behind_eyes "Do you feel pain behind your eyes?"
 
-Symptoms to say NO to:
-  - I lost my sense of smell         [loss_of_smell]
-  - I lost my sense of taste         [loss_of_taste]
+  Say NO to:
+    loss_of_smell  "Have you lost your sense of smell?"
+    loss_of_taste  "Have you lost your sense of taste?"
 
-Expected: Dengue Fever - 100% confidence
+  Expected result:  Dengue Fever — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 7 - Malaria
-----------------------------------------
+Test 7 — Malaria
+------------------------------------------------------------
 Free text: My fever comes and goes and I have heavy sweating
 Symptoms detected: cyclical_fever, sweating_episodes
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have chills and shivering      [chills]
-  - I have a headache                [headache]
-  - I feel tired and weak            [fatigue]
-  - I feel nauseous                  [nausea]
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    chills         "Are you experiencing chills or shivering?"
+    headache       "Do you have a headache?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    nausea         "Are you feeling nauseous?"
 
-Symptoms to say NO to:
-  - I lost my sense of smell         [loss_of_smell]
-  - I have severe joint pain         [severe_joint_pain]
+  Say NO to:
+    loss_of_smell  "Have you lost your sense of smell?"
+    severe_joint_pain "Do you have severe pain in your joints?"
 
-Expected: Malaria - 100% confidence
+  Expected result:  Malaria — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 8 - Chickenpox
-----------------------------------------
+Test 8 — Chickenpox
+------------------------------------------------------------
 Free text: I have an itchy rash all over and I have fluid filled blisters on my skin
 Symptoms detected: itchy_rash, vesicular_rash
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I feel tired and weak            [fatigue]
-  - I have no appetite               [loss_of_appetite]
-  - I have a headache                [headache]
-  - I have chills and shivering      [chills]
+  Say YES to:
+    fever            "Do you have a fever or feel unusually hot?"
+    fatigue          "Are you feeling unusually tired or weak?"
+    loss_of_appetite "Have you lost your appetite or interest in eating?"
+    headache         "Do you have a headache?"
+    chills           "Are you experiencing chills or shivering?"
 
-Symptoms to say NO to:
-  - my fever comes and goes          [cyclical_fever]
-  - I lost my sense of smell         [loss_of_smell]
-  - I lost my sense of taste         [loss_of_taste]
+  Say NO to:
+    cyclical_fever   "Does your fever come and go in regular cycles?"
+    loss_of_smell    "Have you lost your sense of smell?"
+    loss_of_taste    "Have you lost your sense of taste?"
 
-Expected: Chickenpox - 100% confidence
+  Expected result:  Chickenpox — 100.0% confidence
+
 
 ============================================================
-GROUP C - GASTROINTESTINAL
+GROUP C - GASTROINTESTINAL  (4 diseases)
 ============================================================
 
-Test 9 - Gastroenteritis
-----------------------------------------
+Test 9 — Gastroenteritis
+------------------------------------------------------------
 Free text: I have diarrhea and I have stomach cramps
 Symptoms detected: diarrhea, cramping
 
+  Say YES to:
+    nausea           "Are you feeling nauseous?"
+    vomiting         "Have you been vomiting?"
+    abdominal_pain   "Do you have pain in your abdomen or stomach area?"
+    low_grade_fever  "Do you have a mild persistent low-grade fever?"
 
-Symptoms to say YES to:
-  - I feel nauseous                  [nausea]
-  - I keep vomiting                  [vomiting]
-  - I have stomach pain              [abdominal_pain]
-  - I have a mild fever              [low_grade_fever]
+  Say NO to:
+    rebound_tenderness     "Does your abdominal pain worsen when pressure is released?"
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
 
-Symptoms to say NO to:
-  - my stomach is very tender        [rebound_tenderness]
-  - I have pain lower right of my stomach [right_lower_quad_pain]
-
-Expected: Gastroenteritis - 100% confidence
+  Expected result:  Gastroenteritis — 100.0% confidence
+  
 
 ------------------------------------------------------------
 
-Test 10 - Appendicitis
-----------------------------------------
+Test 10 — Appendicitis
+------------------------------------------------------------
 Free text: I have pain lower right of my stomach and my stomach is very tender
 Symptoms detected: right_lower_quad_pain, rebound_tenderness
 
-Symptoms to say YES to:
-  - I feel nauseous                  [nausea]
-  - I keep vomiting                  [vomiting]
-  - I have a fever                   [fever]
+  Say YES to:
+    nausea    "Are you feeling nauseous?"
+    vomiting  "Have you been vomiting?"
+    fever     "Do you have a fever or feel unusually hot?"
 
-Symptoms to say NO to:
-  - I have diarrhea                  [diarrhea]
+  Say NO to:
+    diarrhea  "Are you experiencing diarrhea?"
 
-Expected: Appendicitis - 100% confidence
+  Expected result:  Appendicitis — 100.0% confidence
+  
 
 ------------------------------------------------------------
 
-Test 11 - Peptic Ulcer Disease
-----------------------------------------
+Test 11 — Peptic Ulcer Disease
+------------------------------------------------------------
 Free text: I have a burning pain in my upper stomach and I feel bloated and gassy
 Symptoms detected: burning_epigastric_pain, bloating
 
-Symptoms to say YES to:
-  - I feel nauseous                  [nausea]
-  - I have no appetite               [loss_of_appetite]
-  - I keep vomiting                  [vomiting]
+  Say YES to:
+    nausea           "Are you feeling nauseous?"
+    loss_of_appetite "Have you lost your appetite or interest in eating?"
+    vomiting         "Have you been vomiting?"
 
-Symptoms to say NO to:
-  - I have diarrhea                  [diarrhea]
-  - I have a fever                   [fever]
-  - I have pain lower right of my stomach [right_lower_quad_pain]
+  Say NO to:
+    diarrhea               "Are you experiencing diarrhea?"
+    fever                  "Do you have a fever or feel unusually hot?"
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
 
-Expected: Peptic Ulcer Disease - 100% confidence
+  Expected result:  Peptic Ulcer Disease — 100.0% confidence
+  
 
 ------------------------------------------------------------
 
-Test 12 - Irritable Bowel Syndrome
-----------------------------------------
+Test 12 — Irritable Bowel Syndrome
+------------------------------------------------------------
 Free text: I have stomach cramps and I feel bloated and gassy
 Symptoms detected: cramping, bloating
 
-Symptoms to say YES to:
-  - I have stomach pain              [abdominal_pain]
-  - I have diarrhea                  [diarrhea]
-  - I am constipated                 [constipation]
+  Say YES to:
+    abdominal_pain  "Do you have pain in your abdomen or stomach area?"
+    diarrhea        "Are you experiencing diarrhea?"
+    constipation    "Are you experiencing constipation?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
-  - I keep vomiting                  [vomiting]
-  - my stomach is very tender        [rebound_tenderness]
+  Say NO to:
+    fever              "Do you have a fever or feel unusually hot?"
+    vomiting           "Have you been vomiting?"
+    rebound_tenderness "Does your abdominal pain worsen when pressure is released?"
 
-Expected: Irritable Bowel Syndrome - 100% confidence
+  Expected result:  Irritable Bowel Syndrome — 100.0% confidence
 
 ============================================================
-GROUP D - NEUROLOGICAL / ENT
+GROUP D - NEUROLOGICAL / ENT  (4 diseases)
 ============================================================
 
-Test 13 - Meningitis
-----------------------------------------
+Test 13 — Meningitis
+------------------------------------------------------------
 Free text: I feel confused and disoriented and I have a very stiff neck
 Symptoms detected: confusion, neck_stiffness
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a headache                [headache]
-  - light hurts my eyes              [light_sensitivity]
+  Say YES to:
+    fever             "Do you have a fever or feel unusually hot?"
+    headache          "Do you have a headache?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
 
-Expected: Meningitis - 100% confidence
+  Say NO to:  (nothing required — free text handles elimination)
+
+  Expected result:  Meningitis — 100.0% confidence
+  
 
 ------------------------------------------------------------
 
-Test 14 - Migraine
-----------------------------------------
+Test 14 — Migraine
+------------------------------------------------------------
 Free text: I have a throbbing headache and I am seeing flashing lights
 Symptoms detected: pulsating_pain, visual_aura
 
-  NOTE: "throbbing headache" maps to pulsating_pain.
-  "flashing lights" maps to visual_aura.
+  NOTE: "throbbing headache" maps to pulsating_pain
+        "flashing lights"    maps to visual_aura
 
-Symptoms to say YES to:
-  - I have a headache                [headache]
-  - I feel nauseous                  [nausea]
-  - light hurts my eyes              [light_sensitivity]
-  - the headache is on one side      [one_sided_pain]
+  Say YES to:
+    headache          "Do you have a headache?"
+    nausea            "Are you feeling nauseous?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
+    one_sided_pain    "Is the headache pain only on one side of your head?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
-  - I have a very stiff neck         [neck_stiffness]
-  - I have a sore throat             [sore_throat]
+  Say NO to:
+    fever          "Do you have a fever or feel unusually hot?"
+    neck_stiffness "Is it painful or difficult to move your neck?"
+    sore_throat    "Do you have a sore or painful throat?"
 
-Expected: Migraine - 100% confidence
+  Expected result:  Migraine — 100.0% confidence
+  
 
 ------------------------------------------------------------
 
@@ -290,193 +291,573 @@ Test 15 — Strep Throat
 Free text: I have white patches on my throat and I have swollen glands in my neck
 Symptoms detected: tonsillar_exudate, swollen_lymph_nodes
 
-Say YES to:
-  - I have a fever           [fever]
-  - I have a sore throat     [sore_throat]
-  - I have a headache        [headache]
-  - it came on suddenly      [sudden_onset]
+  Say YES to:
+    fever         "Do you have a fever or feel unusually hot?"
+    sore_throat   "Do you have a sore or painful throat?"
+    headache      "Do you have a headache?"
+    sudden_onset  "Did your symptoms come on very suddenly?"
 
-Say NO to: cough, nausea
-Expected: Strep Throat
+  Say NO to:
+    cough   "Do you have a cough?"
+    nausea  "Are you feeling nauseous?"
+
+  Expected result:  Strep Throat — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 16 - Tension Headache
-----------------------------------------
+Test 16 — Tension Headache
+------------------------------------------------------------
 Free text: I feel dizzy and I have a very stiff neck
 Symptoms detected: dizziness, neck_stiffness
 
-Symptoms to say YES to:
-  - I have a headache                [headache]
-  - I feel tired and weak            [fatigue]
-  - light hurts my eyes              [light_sensitivity]
+  Say YES to:
+    headache          "Do you have a headache?"
+    fatigue           "Are you feeling unusually tired or weak?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
 
-Symptoms to say NO to:
-  - the headache is on one side      [one_sided_pain]
-  - I have a fever                   [fever]
-  - I have a throbbing headache      [pulsating_pain]
+  Say NO to:
+    one_sided_pain  "Is the headache pain only on one side of your head?"
+    fever           "Do you have a fever or feel unusually hot?"
+    pulsating_pain  "Is your headache throbbing or pulsating?"
 
-Expected: Tension Headache - 100% confidence
+  Expected result:  Tension Headache — 100.0% confidence
+  
 
 ============================================================
-GROUP E - METABOLIC / SYSTEMIC
+GROUP E - METABOLIC / SYSTEMIC  (4 diseases)
 ============================================================
 
-Test 17 - Diabetes Type 2
-----------------------------------------
+Test 17 — Diabetes Type 2
+------------------------------------------------------------
 Free text: I am always very thirsty and I need to pee a lot
 Symptoms detected: excessive_thirst, frequent_urination
 
-Symptoms to say YES to:
-  - I feel tired and weak            [fatigue]
-  - my vision is blurry              [blurred_vision]
-  - my cuts are not healing          [slow_wound_healing]
+  Say YES to:
+    fatigue          "Are you feeling unusually tired or weak?"
+    blurred_vision   "Is your vision blurry or unclear?"
+    slow_wound_healing "Are cuts or wounds taking longer than usual to heal?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
-  - I have been told I have a slow pulse [slow_heart_rate]
+  Say NO to:
+    fever           "Do you have a fever or feel unusually hot?"
+    slow_heart_rate "Have you been told your heart rate is unusually slow?"
 
-Expected: Diabetes Type 2 - 100% confidence
+  Expected result:  Diabetes Type 2 — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 18 - Hypothyroidism
-----------------------------------------
+Test 18 — Hypothyroidism
+------------------------------------------------------------
 Free text: I keep gaining weight and I always feel cold
 Symptoms detected: weight_gain, cold_intolerance
 
-  NOTE: "I always feel cold" maps to cold_intolerance.
-  "I have cold hands and feet" maps separately to cold_hands_and_feet.
+  NOTE: "I always feel cold" maps to cold_intolerance
+        "I have cold hands and feet" maps to cold_hands_and_feet
+        These are different atoms — use the exact phrase above.
 
-Symptoms to say YES to:
-  - I feel tired and weak            [fatigue]
-  - my skin is very dry              [dry_skin]
-  - I am constipated                 [constipation]
-  - my hair is falling out           [hair_loss]
+  Say YES to:
+    fatigue      "Are you feeling unusually tired or weak?"
+    dry_skin     "Is your skin unusually dry or flaky?"
+    constipation "Are you experiencing constipation?"
+    hair_loss    "Have you noticed unusual hair loss recently?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
+  Say NO to:
+    fever  "Do you have a fever or feel unusually hot?"
 
-Expected: Hypothyroidism - 100% confidence
+  Expected result:  Hypothyroidism — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 19 - Anemia
-----------------------------------------
+Test 19 — Anemia
+------------------------------------------------------------
 Free text: My skin looks pale and my hands and feet are always cold
 Symptoms detected: pale_skin, cold_hands_and_feet
 
-  NOTE: "my hands and feet are always cold" maps to cold_hands_and_feet.
-  Use this exact phrase — "always cold" alone maps to cold_intolerance.
+  NOTE: "my hands and feet are always cold" maps to cold_hands_and_feet
+        "I always feel cold" maps to cold_intolerance (different atom)
+        Use the exact phrase above.
 
-Symptoms to say YES to:
-  - I feel tired and weak            [fatigue]
-  - I have a headache                [headache]
-  - I feel dizzy                     [dizziness]
-  - I am short of breath             [shortness_of_breath]
+  Say YES to:
+    fatigue             "Are you feeling unusually tired or weak?"
+    headache            "Do you have a headache?"
+    dizziness           "Are you feeling dizzy or lightheaded?"
+    shortness_of_breath "Do you feel short of breath easily?"
 
-Symptoms to say NO to:
-  - I have a fever                   [fever]
-  - I have been told I have a slow pulse [slow_heart_rate]
-  - I am always very thirsty         [excessive_thirst]
+  Say NO to:
+    fever           "Do you have a fever or feel unusually hot?"
+    slow_heart_rate "Have you been told your heart rate is unusually slow?"
+    excessive_thirst "Are you feeling unusually thirsty throughout the day?"
 
-Expected: Anemia - 100% confidence
+  Expected result:  Anemia — 100.0% confidence
 
 ------------------------------------------------------------
 
-Test 20 - Typhoid Fever
-----------------------------------------
+Test 20 — Typhoid Fever
+------------------------------------------------------------
 Free text: I have rose spots on my skin and I have been told I have a slow pulse
 Symptoms detected: rose_spot_rash, slow_heart_rate
 
-Symptoms to say YES to:
-  - I have a fever                   [fever]
-  - I have a headache                [headache]
-  - I feel tired and weak            [fatigue]
-  - I have stomach pain              [abdominal_pain]
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    headache       "Do you have a headache?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    abdominal_pain "Do you have pain in your abdomen or stomach area?"
 
-Symptoms to say NO to:
-  - I keep gaining weight            [weight_gain]
+  Say NO to:
+    weight_gain  "Have you gained weight without a clear reason?"
 
-Expected: Typhoid Fever - 100% confidence
+  Expected result:  Typhoid Fever — 100.0% confidence
+  
 
 ============================================================
-EDGE CASES
+EDGES CASES
+============================================================
+ 
+Edge 1 — Inconclusive (fever + weight_gain contradiction)
+------------------------------------------------------------
+Free text:  I have a fever and I keep gaining weight
+Detected:   fever, weight_gain
+ 
+  Say YES to:
+    fatigue    "Are you feeling unusually tired or weak?"
+    headache   "Do you have a headache?"
+ 
+  Say NO to:  everything else
+ 
+  Expected:   Inconclusive — 0 candidates remaining
+ 
+------------------------------------------------------------
+ 
+Edge 2 — Migraine vs Meningitis disambiguation
+------------------------------------------------------------
+Free text:  I have a throbbing headache and I am seeing flashing lights
+Detected:   pulsating_pain, visual_aura
+ 
+  Say YES to:
+    nausea            "Are you feeling nauseous?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
+    one_sided_pain    "Is the headache pain only on one side of your head?"
+ 
+  Say NO to:
+    neck_stiffness  "Is it painful or difficult to move your neck?"
+    fever           "Do you have a fever or feel unusually hot?"
+ 
+  Expected:   Migraine — 94.7% confidence
+              (not 100% because headache was not in free text)
+
+------------------------------------------------------------
+Edge 3 — Appendicitis vs Gastroenteritis disambiguation
+------------------------------------------------------------
+Case A: symptoms point to Appendicitis
+------------------------------------------------------------
+Free text:  I have pain lower right of my stomach and my stomach is very tender
+Detected:   nausea, abdominal_pain
+ 
+  Say YES to:
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
+    rebound_tenderness     "Does your abdominal pain worsen when pressure is released?"
+    fever                  "Do you have a fever or feel unusually hot?"
+ 
+  Say NO to:
+    diarrhea  "Are you experiencing diarrhea?"
+ 
+  Expected:   Appendicitis — 81.0% confidence
+              (not 100% because vomiting was not confirmed)
+
+------------------------------------------------------------
+Case B: symptoms point to Gastroenteritis
+------------------------------------------------------------
+Free text:  I have diarrhea and I have stomach cramps
+Detected:   (implied from context)
+
+  Say YES to:
+    nausea           "Are you feeling nauseous?"
+    vomiting         "Have you been vomiting?"
+    abdominal_pain   "Do you have pain in your abdomen or stomach area?"
+    low_grade_fever  "Do you have a mild persistent low-grade fever?"
+
+  Say NO to:
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
+    rebound_tenderness     "Does your abdominal pain worsen when pressure is released?"
+
+  Expected:   Gastroenteritis — 100.0% confidence
+              (only candidate remaining)
+
+------------------------------------------------------------
+Edge 4 — TB vs Pneumonia disambiguation
+------------------------------------------------------------
+Case A: symptoms point to TB
+------------------------------------------------------------
+Free text:  I have had a persistent cough for weeks and I have a mild fever
+Detected:   chronic_cough, low_grade_fever
+ 
+  Say YES to:
+    night_sweats      "Do you wake up drenched in sweat at night?"
+    weight_loss       "Have you lost weight recently without trying?"
+    productive_cough  "Are you coughing up mucus or phlegm?"
+ 
+  Say NO to:
+    sudden_onset  "Did your symptoms come on very suddenly?"
+    diarrhea      "Are you experiencing diarrhea?"
+ 
+  Expected:   Tuberculosis — 70.4% confidence
+
+------------------------------------------------------------
+Case B: symptoms point to Pneumonia
+------------------------------------------------------------
+Free text:  I am breathless and I have chest pain
+Detected:   difficulty_breathing, chest_pain
+
+  Say YES to:
+    fever            "Do you have a fever or feel unusually hot?"
+    cough            "Do you have a cough?"
+    fatigue          "Are you feeling unusually tired or weak?"
+    productive_cough "Are you coughing up mucus or phlegm?"
+
+  Say NO to:
+    body_aches   "Do you have aching muscles or body pain?"
+    sudden_onset "Did your symptoms come on very suddenly?"
+
+  Expected:   Pneumonia — 100.0% confidence
+              Runner-up: tuberculosis 26.0%
+
+------------------------------------------------------------
+Edge 5 — Influenza vs COVID-19 (share fever, cough, fatigue)
+------------------------------------------------------------
+Free text:  I have body aches and muscle pain and it came on suddenly
+Detected:   body_aches, sudden_onset
+ 
+  Say YES to:
+    fever    "Do you have a fever or feel unusually hot?"
+    cough    "Do you have a cough?"
+    fatigue  "Are you feeling unusually tired or weak?"
+    headache "Do you have a headache?"
+    chills   "Are you experiencing chills or shivering?"
+ 
+  Say NO to:
+    loss_of_smell  "Have you lost your sense of smell?"
+    loss_of_taste  "Have you lost your sense of taste?"
+ 
+  Expected:   Influenza — 100.0% confidence
+
+------------------------------------------------------------
+Edge 6 — Dengue vs Malaria disambiguation
+------------------------------------------------------------
+Case A: symptoms point to Dengue
+------------------------------------------------------------
+Free text:  I have severe joint pain and I have a rash
+Detected:   severe_joint_pain, skin_rash
+ 
+  Say YES to:
+    fever          "Do you have a fever or feel unusually hot?"
+    headache       "Do you have a headache?"
+    fatigue        "Are you feeling unusually tired or weak?"
+    pain_behind_eyes "Do you feel pain behind your eyes?"
+ 
+  Say NO to:
+    cyclical_fever  "Does your fever come and go in regular cycles?"
+    chills          "Are you experiencing chills or shivering?"
+ 
+  Expected:   Dengue Fever — 100.0% confidence
+
+------------------------------------------------------------
+Case B: symptoms point to Malaria
+------------------------------------------------------------
+Free text:  My fever comes and goes and I have heavy sweating
+Detected:   cyclical_fever, sweating_episodes
+
+  Say YES to:
+    fever    "Do you have a fever or feel unusually hot?"
+    chills   "Are you experiencing chills or shivering?"
+    headache "Do you have a headache?"
+    fatigue  "Are you feeling unusually tired or weak?"
+    nausea   "Are you feeling nauseous?"
+ 
+  Say NO to:
+    severe_joint_pain  "Do you have severe pain in your joints?"
+    skin_rash          "Do you have a skin rash anywhere on your body?"
+ 
+  Expected:   Malaria — 100.0% confidence
+
+------------------------------------------------------------
+Edge 7 — Influenza vs Pneumonia (both have fever, cough)
+------------------------------------------------------------
+(Note: See Tests 1 and 3 for detailed cases)
+
+------------------------------------------------------------
+Edge 8 — TB with haemoptysis denied
+------------------------------------------------------------
+Free text:  I have had a persistent cough for weeks and I wake up drenched in sweat at night
+Detected:   chronic_cough, night_sweats
+
+  Say YES to:
+    productive_cough  "Are you coughing up mucus or phlegm?"
+    weight_loss       "Have you lost weight recently without trying?"
+    fatigue           "Are you feeling unusually tired or weak?"
+    low_grade_fever   "Do you have a mild persistent low-grade fever?"
+    chest_pain        "Do you have pain or tightness in your chest?"
+
+  Say NO to:
+    haemoptysis  "Have you coughed up blood or blood-stained mucus?"
+    sudden_onset "Did your symptoms come on very suddenly?"
+
+  Expected:   Tuberculosis — 69.2% confidence
+              Candidates: 1
+
+------------------------------------------------------------
+Edge 9 — Gastroenteritis vs IBS (share abdominal_pain, cramping, diarrhea)
+------------------------------------------------------------
+Case A: symptoms point to IBS
+------------------------------------------------------------
+Free text:  I have stomach cramps and I feel bloated and gassy
+Detected:   cramping, bloating
+ 
+  Say YES to:
+    abdominal_pain  "Do you have pain in your abdomen or stomach area?"
+    diarrhea        "Are you experiencing diarrhea?"
+    constipation    "Are you experiencing constipation?"
+ 
+  Say NO to:
+    fever    "Do you have a fever or feel unusually hot?"
+    vomiting "Have you been vomiting?"
+    nausea   "Are you feeling nauseous?"
+ 
+  Expected:   Irritable Bowel Syndrome — 100.0% confidence
+
+------------------------------------------------------------
+Case B: symptoms point to Gastroenteritis
+------------------------------------------------------------
+Free text:  I have diarrhea and I have stomach cramps
+Detected:   diarrhea, cramping
+
+  Say YES to:
+    nausea          "Are you feeling nauseous?"
+    vomiting        "Have you been vomiting?"
+    abdominal_pain  "Do you have pain in your abdomen or stomach area?"
+    low_grade_fever "Do you have a mild persistent low-grade fever?"
+
+  Say NO to:
+    constipation        "Are you experiencing constipation?"
+    rebound_tenderness  "Does your abdominal pain worsen when pressure is released?"
+
+  Expected:   Gastroenteritis — 100.0% confidence
+              Candidates: 1
+
+------------------------------------------------------------
+Edge 10 — Meningitis vs Tension Headache (share headache, light_sensitivity, neck_stiffness)
+------------------------------------------------------------
+Case A: symptoms point to Tension Headache
+------------------------------------------------------------
+Free text:  I feel dizzy and I have a very stiff neck
+Detected:   dizziness, neck_stiffness
+ 
+  Say YES to:
+    headache          "Do you have a headache?"
+    fatigue           "Are you feeling unusually tired or weak?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
+ 
+  Say NO to:
+    fever          "Do you have a fever or feel unusually hot?"
+    pulsating_pain "Is your headache throbbing or pulsating?"
+ 
+  Expected:   Tension Headache — 100.0% confidence
+              Candidates: 1
+
+------------------------------------------------------------
+Case B: symptoms point to Meningitis
+------------------------------------------------------------
+Free text:  I feel confused and disoriented and I have a very stiff neck
+Detected:   confusion, neck_stiffness
+
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
+ 
+  Say NO to:  (nothing required — free text handles disambiguation)
+ 
+  Expected:   Meningitis — 100.0% confidence
+              Candidates: 1
+
+ 
+Edge 11 — Anemia vs Tension Headache
+          (share dizziness, fatigue, headache)
+------------------------------------------------------------
+Case A: symptoms point to Anemia
+------------------------------------------------------------
+Free text:  My skin looks pale and my hands and feet are always cold
+Detected:   pale_skin, cold_hands_and_feet
+ 
+  Say YES to:
+    fatigue             "Are you feeling unusually tired or weak?"
+    headache            "Do you have a headache?"
+    dizziness           "Are you feeling dizzy or lightheaded?"
+    shortness_of_breath "Do you feel short of breath easily?"
+ 
+  Say NO to:
+    fever          "Do you have a fever or feel unusually hot?"
+    neck_stiffness "Is it painful or difficult to move your neck?"
+ 
+  Expected:   Anemia — 100.0% confidence
+
+------------------------------------------------------------
+Case B: symptoms point to Tension Headache
+------------------------------------------------------------
+Free text:  I feel dizzy and I have a very stiff neck
+Detected:   dizziness, neck_stiffness
+
+  Say YES to:
+    headache          "Do you have a headache?"
+    fatigue           "Are you feeling unusually tired or weak?"
+    light_sensitivity "Does light hurt your eyes or make you uncomfortable?"
+
+  Say NO to:
+    fever               "Do you have a fever or feel unusually hot?"
+    pale_skin           "Has anyone told you your skin looks pale or washed out?"
+    shortness_of_breath "Do you feel short of breath easily?"
+
+  Expected:   Tension Headache — 100.0% confidence
+              Candidates: 1
+
+------------------------------------------------------------
+Edge 12 — Diabetes vs Hypothyroidism disambiguation
+------------------------------------------------------------
+Case A: symptoms point to Diabetes
+ 
+  Say YES to:
+    fatigue            "Are you feeling unusually tired or weak?"
+    blurred_vision     "Is your vision blurry or unclear?"
+    slow_wound_healing "Are cuts or wounds taking longer than usual to heal?"
+ 
+  Say NO to:
+    fever            "Do you have a fever or feel unusually hot?"
+    weight_gain      "Have you gained weight without a clear reason?"
+    cold_intolerance "Do you feel unusually cold even in warm environments?"
+ 
+  Expected:   Diabetes Type 2 — 100.0% confidence
+
+------------------------------------------------------------
+Case B: symptoms point to Hypothyroidism
+------------------------------------------------------------
+Free text:  I keep gaining weight and I always feel cold
+Detected:   weight_gain, cold_intolerance
+
+  Say YES to:
+    fatigue      "Are you feeling unusually tired or weak?"
+    dry_skin     "Is your skin unusually dry or flaky?"
+    constipation "Are you experiencing constipation?"
+    hair_loss    "Have you noticed unusual hair loss recently?"
+
+  Say NO to:
+    fever            "Do you have a fever or feel unusually hot?"
+    excessive_thirst "Are you feeling unusually thirsty throughout the day?"
+    frequent_urination "Are you urinating much more frequently than usual?"
+
+  Expected:   Hypothyroidism — 100.0% confidence
+
+------------------------------------------------------------
+Edge 13 — Inconclusive: diarrhea + weight_gain contradiction
+------------------------------------------------------------
+  Say YES to:
+    fatigue  "Are you feeling unusually tired or weak?"
+ 
+  Say NO to:
+    fever   "Do you have a fever or feel unusually hot?"
+    nausea  "Are you feeling nauseous?"
+ 
+  Expected:   Inconclusive — 0 candidates remaining
+
+------------------------------------------------------------
+Edge 14 — Inconclusive: only generic symptoms (no clear diagnosis)
+------------------------------------------------------------
+Free text:  (leave blank — press Enter to skip)
+Detected:   none
+ 
+  Say YES to:
+    fatigue  "Are you feeling unusually tired or weak?"
+    headache "Do you have a headache?"
+ 
+  Say NO to:
+    fever                  "Do you have a fever or feel unusually hot?"
+    cough                  "Do you have a cough?"
+    neck_stiffness         "Is it painful or difficult to move your neck?"
+    severe_joint_pain      "Do you have severe pain in your joints?"
+    loss_of_smell          "Have you lost your sense of smell?"
+    body_aches             "Do you have aching muscles or body pain?"
+    cyclical_fever         "Does your fever come and go in regular cycles?"
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
+    vesicular_rash         "Do you have a rash with small fluid-filled blisters?"
+    chronic_cough          "Have you had a persistent cough lasting more than 3 weeks?"
+    burning_epigastric_pain "Do you have a burning pain in your upper stomach area?"
+    excessive_thirst       "Are you feeling unusually thirsty throughout the day?"
+    pulsating_pain         "Is your headache throbbing or pulsating?"
+ 
+  Expected:   Inconclusive — no disease reaches 65% threshold
+              Top scores: tension_headache 21.1%, anemia 9.6%
+              Candidates remaining: 7
+ 
+============================================================
+EDGE CASE SUMMARY
+============================================================
+ 
+  Edge  1  Inconclusive: fever + weight_gain          -> 0 candidates
+  Edge  2  Migraine vs Meningitis                     -> Migraine 94.7%
+  Edge  3  Appendicitis vs Gastroenteritis            -> Appendicitis 81.0%
+  Edge  4  TB vs Pneumonia                            -> TB 70.4%
+  Edge  5  Influenza vs COVID-19                      -> Influenza 100%
+  Edge  6A Dengue vs Malaria (dengue symptoms)        -> Dengue 100%
+  Edge  6B Dengue vs Malaria (malaria symptoms)       -> Malaria 100%
+  Edge  7  Influenza vs Pneumonia                     -> Pneumonia 100%
+  Edge  8  TB with haemoptysis denied                 -> TB 69.2%  *
+  Edge  9A Gastroenteritis vs IBS (IBS symptoms)      -> IBS 100%
+  Edge  9B Gastroenteritis vs IBS (gastro symptoms)   -> Gastroenteritis 100%
+  Edge 10A Meningitis vs Tension HA (tension)         -> Tension HA 100%
+  Edge 10B Meningitis vs Tension HA (meningitis)      -> Meningitis 100%
+  Edge 11A Anemia vs Tension HA (anemia)              -> Anemia 100%
+  Edge 11B Anemia vs Tension HA (tension)             -> Tension HA 100%
+  Edge 12A Diabetes vs Hypothyroidism (diabetes)      -> Diabetes 100%
+  Edge 12B Diabetes vs Hypothyroidism (hypothyroid)   -> Hypothyroid 100%
+  Edge 13  Inconclusive: diarrhea + weight_gain       -> 0 candidates
+  Edge 14  Inconclusive: only generic symptoms        -> below threshold
+ 
+============================================================
+END OF EDGE CASES
 ============================================================
 
-Edge 1 - Inconclusive (contradictory profile)
-----------------------------------------
-Free text: I have a fever and I keep gaining weight
-Symptoms detected: fever, weight_gain
 
-Symptoms to say YES to:
-  - I feel tired and weak            [fatigue]
-  - I have a headache                [headache]
+============================================================
+SCORING REFERENCE — IDF WEIGHTS
+============================================================
 
-Symptoms to say NO to:
-  - everything else
+  Weight 3.00  (unique to 1 disease — most diagnostic)
+    body_aches, runny_nose, sneezing, difficulty_breathing,
+    loss_of_smell, loss_of_taste, severe_joint_pain, skin_rash,
+    pain_behind_eyes, sweating_episodes, cyclical_fever,
+    rebound_tenderness, right_lower_quad_pain, confusion,
+    visual_aura, one_sided_pain, pulsating_pain, tonsillar_exudate,
+    swollen_lymph_nodes, frequent_urination, slow_wound_healing,
+    excessive_thirst, blurred_vision, dry_skin, cold_intolerance,
+    weight_gain, hair_loss, pale_skin, cold_hands_and_feet,
+    rose_spot_rash, slow_heart_rate, night_sweats, weight_loss,
+    haemoptysis, chronic_cough, vesicular_rash, itchy_rash,
+    burning_epigastric_pain
 
-Expected: Inconclusive
-Reason: fever hard-rules out all chronic diseases (hypothyroidism,
-        diabetes, anemia etc.), weight_gain hard-rules out all acute
-        infectious diseases. No disease survives both constraints.
+  Weight 2.30  (in 2 diseases — highly diagnostic)
+    sudden_onset, sore_throat, chest_pain, productive_cough,
+    shortness_of_breath, diarrhea, low_grade_fever, cramping,
+    neck_stiffness, constipation, dizziness, loss_of_appetite, bloating
 
-------------------------------------------------------------
+  Weight 1.90  (in 3 diseases — moderately diagnostic)
+    chills, abdominal_pain, vomiting, light_sensitivity
 
-Edge 2 - Migraine vs Meningitis disambiguation
-----------------------------------------
-Free text: I have a throbbing headache and I am seeing flashing lights
-Symptoms detected: pulsating_pain, visual_aura
+  Weight 1.61  (in 4 diseases)
+    cough
 
-Symptoms to say YES to:
-  - I feel nauseous                  [nausea]
-  - light hurts my eyes              [light_sensitivity]
-  - the headache is on one side      [one_sided_pain]
+  Weight 1.39  (in 5 diseases)
+    nausea
 
-Symptoms to say NO to:
-  - I have a very stiff neck         [neck_stiffness]
-  - I have a fever                   [fever]
+  Weight 0.69  (in 10 diseases — low diagnostic value)
+    fever, headache
 
-Expected: Migraine
-Reason: neck_stiffness NO eliminates meningitis.
-        pulsating_pain + visual_aura + one_sided_pain = migraine.
+  Weight 0.43  (in 13 diseases — minimal diagnostic value alone)
+    fatigue
 
-------------------------------------------------------------
-
-Edge 3 - Appendicitis vs Gastroenteritis disambiguation
-----------------------------------------
-Free text: I feel nauseous and I have stomach pain
-Symptoms detected: nausea, abdominal_pain
-
-Symptoms to say YES to:
-  - I have pain lower right of my stomach [right_lower_quad_pain]
-  - my stomach is very tender        [rebound_tenderness]
-  - I have a fever                   [fever]
-
-Symptoms to say NO to:
-  - I have diarrhea                  [diarrhea]
-
-Expected: Appendicitis
-Reason: diarrhea NO hard-rules out gastroenteritis.
-        RLQ pain + rebound tenderness + fever = appendicitis.
-
-------------------------------------------------------------
-
-Edge 4 - TB vs Pneumonia disambiguation
-----------------------------------------
-Free text: I have had a persistent cough for weeks and I have a mild fever
-Symptoms detected: chronic_cough, low_grade_fever
-
-Symptoms to say YES to:
-  - I wake up drenched in sweat at night  [night_sweats]
-  - I have been losing weight without trying [weight_loss]
-  - I am coughing up phlegm          [productive_cough]
-
-Symptoms to say NO to:
-  - it came on suddenly              [sudden_onset]
-  - I have diarrhea                  [diarrhea]
-
-Expected: Tuberculosis
-Reason: chronic_cough + night_sweats + weight_loss distinguish TB.
-        sudden_onset NO hard-rules out influenza.
-        pneumonia is eliminated because weight_loss is a hard-NO for it.
+============================================================
+END OF TEST SCENARIOS
+============================================================

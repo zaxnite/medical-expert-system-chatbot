@@ -18,16 +18,7 @@ _PROLOG_DIR = Path(__file__).parent.parent / "src" / "prolog"
 
 
 class PrologBridge:
-    """
-    Wrapper around the SWI-Prolog engine.
-    One instance per consultation session.
-
-    Handles:
-      - Loading all three .pl files in the right order
-      - assert_symptom / deny_symptom / reset
-      - next_question and consult_result
-      - engine_status for the OOP monitoring thread
-    """
+    # Wrapper around SWI-Prolog engine
 
     def __init__(self, prolog_dir: Path = None):
         # Set stack limit directly at startup to prevent crashes on Windows + pyswip.
@@ -44,10 +35,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def load(self) -> None:
-        """
-        Load all Prolog files into the engine.
-        knowledge_base -> diagnosis_rules -> inference_engine
-        """
+        # Load all Prolog files in order
         if self._loaded:
             return
 
@@ -80,7 +68,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def reset_session(self) -> None:
-        """Wipe all dynamic facts and start fresh."""
+        # Wipe all dynamic facts and start fresh
         self._require_loaded()
         list(self._prolog.query("reset_session"))
 
@@ -89,18 +77,12 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def assert_symptom(self, symptom: str) -> None:
-        """
-        Tell Prolog the patient confirmed this symptom.
-        symptom: Prolog atom string e.g. 'fever', 'cough'
-        """
+        # Tell Prolog patient confirmed this symptom
         self._require_loaded()
         list(self._prolog.query(f"assert_symptom({symptom})"))
 
     def deny_symptom(self, symptom: str) -> None:
-        """
-        Tell Prolog the patient denied this symptom.
-        symptom: Prolog atom string e.g. 'fever', 'cough'
-        """
+        # Tell Prolog patient denied this symptom
         self._require_loaded()
         list(self._prolog.query(f"deny_symptom({symptom})"))
 
@@ -109,16 +91,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def get_next_question(self) -> dict | None:
-        """
-        Ask Prolog what symptom to ask about next.
-
-        Returns:
-            {
-                'symptom': 'fever',
-                'question': 'Do you have a fever or feel unusually hot?'
-            }
-            or None if no more questions are needed.
-        """
+        # Ask Prolog what symptom to ask about next
         self._require_loaded()
 
         results = list(self._prolog.query(
@@ -142,18 +115,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def step(self, symptom: str, answer: bool) -> dict:
-        """
-        Process one patient answer and return the next action.
-
-        Parameters:
-            symptom: the symptom atom that was just answered
-            answer:  True = yes, False = no
-
-        Returns one of three dict shapes:
-            {'action': 'ask',    'symptom': ..., 'question': ...}
-            {'action': 'result', 'disease': ..., 'confidence': ..., 'tests': [...]}
-            {'action': 'result', 'disease': 'inconclusive', 'confidence': 0, 'tests': [...]}
-        """
+        # Process one patient answer and return next action
         self._require_loaded()
 
         if answer:
@@ -172,7 +134,7 @@ class PrologBridge:
             matched = list(self._prolog.query(
                 f"symptom_of({sole}, S), symptom(S)"
             ))
-            if (conf_res and float(conf_res[0]["Pct"]) >= 60.0
+            if (conf_res and float(conf_res[0]["Pct"]) >= 65.0
                     and len(matched) >= 3):
                 return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
 
@@ -191,10 +153,7 @@ class PrologBridge:
         return {"action": "ask", "candidate_count": len(candidates), **nq}
 
     def get_first_question(self) -> dict:
-        """
-        Called at the start of a consultation to get the first question
-        without processing any answer first.
-        """
+        # Get first question without processing any answer
         self._require_loaded()
         nq = self.get_next_question()
         if nq:
@@ -207,11 +166,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def _build_early_exit_result(self, disease: str, confidence: float) -> dict:
-        """
-        Build result when only 1 candidate remains.
-        Uses actual confidence (floored at 65%) rather than 100%,
-        since being the only candidate doesn't mean every symptom matched.
-        """
+        # Build result when only 1 candidate remains
         tests_raw = list(self._prolog.query(f"needs_tests({disease}, Tests)"))
         tests = self._parse_tests(tests_raw[0]["Tests"]) if tests_raw else []
 
@@ -238,7 +193,7 @@ class PrologBridge:
         }
 
     def _build_result(self) -> dict:
-        """Query consult_result/3 and format the output."""
+        # Query consult_result and format output
         results = list(self._prolog.query(
             "consult_result(Disease, Confidence, Tests)"
         ))
@@ -278,11 +233,7 @@ class PrologBridge:
         }
 
     def _get_symptom_summary(self, disease: str) -> tuple[list[str], list[str]]:
-        """
-        Returns two lists for the diagnosed disease:
-          confirmed - symptoms the patient reported
-          other     - symptoms of the disease the patient did NOT confirm
-        """
+        # Get confirmed and other symptoms for disease
         all_symptoms = [
             str(r["S"])
             for r in self._prolog.query(f"symptom_of({disease}, S)")
@@ -296,9 +247,7 @@ class PrologBridge:
         return confirmed, other
 
     def _parse_tests(self, raw) -> list[dict]:
-        """
-        Convert Prolog T-C pairs into Python dicts.
-        """
+        # Convert Prolog T-C pairs into Python dicts
         parsed = []
         if not raw:
             return parsed
@@ -322,20 +271,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def get_status(self) -> dict:
-        """
-        Snapshot of current engine state.
-        Called by ConsultationLog to update session metadata.
-
-        Returns:
-            {
-                'candidates':      [...],
-                'confirmed':       [...],
-                'denied':          [...],
-                'questions_asked': int,
-                'top_candidate':   str,
-                'top_confidence':  float
-            }
-        """
+        # Return snapshot of engine state
         self._require_loaded()
 
         # Query candidates
@@ -385,10 +321,7 @@ class PrologBridge:
     # ----------------------------------------------------------------
 
     def query(self, prolog_query: str) -> list[dict]:
-        """
-        Run any Prolog query and return results as a list of dicts.
-        Used for testing and predicates not yet wrapped above.
-        """
+        # Run any Prolog query and return results
         self._require_loaded()
         return [
             {k: str(v) for k, v in row.items()}

@@ -64,8 +64,7 @@ reset_session :-
 
 % ================================================================
 % SECTION 2 - HARD RULES
-% Each rule: if patient HAS this symptom, disease is ruled out.
-% Demonstrates negation-as-failure and closed-world assumption.
+% If patient has this symptom, disease is ruled out
 % ================================================================
 
 % --- Common cold: mild upper respiratory only ---
@@ -77,91 +76,91 @@ hard_rule(common_cold, not(vomiting)).
 hard_rule(common_cold, not(chills)).
 hard_rule(common_cold, not(diarrhea)).
 
-% --- Influenza: acute systemic - ruled out by GI-only symptoms ---
+% --- Influenza: acute systemic ---
 hard_rule(influenza, not(diarrhea)).
 hard_rule(influenza, not(neck_stiffness)).
-hard_rule(influenza, not(weight_gain)).           % acute illness - no chronic metabolic change
-hard_rule(influenza, not(loss_of_smell)).         % anosmia is COVID-19 hallmark, not flu
-hard_rule(influenza, not(loss_of_taste)).         % same - COVID differentiator
-hard_rule(influenza, not(right_lower_quad_pain)). % surgical/GI sign, not respiratory
-hard_rule(influenza, not(rebound_tenderness)).    % peritoneal sign - incompatible
-hard_rule(influenza, not(excessive_thirst)).      % metabolic symptom, not acute viral
+hard_rule(influenza, not(weight_gain)).
+hard_rule(influenza, not(loss_of_smell)).
+hard_rule(influenza, not(loss_of_taste)).
+hard_rule(influenza, not(right_lower_quad_pain)).
+hard_rule(influenza, not(rebound_tenderness)).
+hard_rule(influenza, not(excessive_thirst)).
 
-% --- Pneumonia: respiratory - ruled out by non-respiratory dominance ---
+% --- Pneumonia: respiratory ---
 hard_rule(pneumonia, not(diarrhea)).
 hard_rule(pneumonia, not(neck_stiffness)).
 hard_rule(pneumonia, not(weight_gain)).
 hard_rule(pneumonia, not(excessive_thirst)).
-hard_rule(pneumonia, not(loss_of_smell)).         % anosmia = COVID, not pneumonia
-hard_rule(pneumonia, not(loss_of_taste)).         % same
-hard_rule(pneumonia, not(severe_joint_pain)).     % dengue-specific arthralgia
-hard_rule(pneumonia, not(right_lower_quad_pain)). % surgical sign, not respiratory
-hard_rule(pneumonia, not(rebound_tenderness)).    % peritoneal sign
+hard_rule(pneumonia, not(loss_of_smell)).
+hard_rule(pneumonia, not(loss_of_taste)).
+hard_rule(pneumonia, not(severe_joint_pain)).
+hard_rule(pneumonia, not(right_lower_quad_pain)).
+hard_rule(pneumonia, not(rebound_tenderness)).
 
 % --- COVID-19 ---
 hard_rule(covid19, not(neck_stiffness)).
 hard_rule(covid19, not(weight_gain)).
 hard_rule(covid19, not(diarrhea)).
-hard_rule(covid19, not(severe_joint_pain)).     % bone-breaking joint pain = dengue hallmark
-hard_rule(covid19, not(right_lower_quad_pain)). % surgical sign
-hard_rule(covid19, not(rebound_tenderness)).    % peritoneal sign
-hard_rule(covid19, not(cyclical_fever)).        % periodic fever = malaria pattern
-hard_rule(covid19, not(rose_spot_rash)).        % typhoid-specific rash
-hard_rule(covid19, not(slow_heart_rate)).       % relative bradycardia = typhoid sign
+hard_rule(covid19, not(severe_joint_pain)).
+hard_rule(covid19, not(right_lower_quad_pain)).
+hard_rule(covid19, not(rebound_tenderness)).
+hard_rule(covid19, not(cyclical_fever)).
+hard_rule(covid19, not(rose_spot_rash)).
+hard_rule(covid19, not(slow_heart_rate)).
 
 % --- Dengue fever: tropical viral ---
 hard_rule(dengue_fever, not(neck_stiffness)).
 hard_rule(dengue_fever, not(diarrhea)).
 hard_rule(dengue_fever, not(weight_gain)).
-hard_rule(dengue_fever, not(loss_of_smell)).         % anosmia = COVID
-hard_rule(dengue_fever, not(loss_of_taste)).         % same
-hard_rule(dengue_fever, not(right_lower_quad_pain)). % surgical sign
-hard_rule(dengue_fever, not(rebound_tenderness)).    % peritoneal sign
-hard_rule(dengue_fever, not(excessive_thirst)).      % metabolic, not acute viral
-hard_rule(dengue_fever, not(slow_heart_rate)).       % relative bradycardia = typhoid sign
+hard_rule(dengue_fever, not(loss_of_smell)).
+hard_rule(dengue_fever, not(loss_of_taste)).
+hard_rule(dengue_fever, not(right_lower_quad_pain)).
+hard_rule(dengue_fever, not(rebound_tenderness)).
+hard_rule(dengue_fever, not(excessive_thirst)).
+hard_rule(dengue_fever, not(slow_heart_rate)).
 
 % --- Malaria: cyclical fever pattern ---
 hard_rule(malaria, not(neck_stiffness)).
 hard_rule(malaria, not(weight_gain)).
 hard_rule(malaria, not(diarrhea)).
-hard_rule(malaria, not(loss_of_smell)).         % anosmia = COVID
-hard_rule(malaria, not(right_lower_quad_pain)). % surgical sign
-hard_rule(malaria, not(rebound_tenderness)).    % peritoneal sign
-hard_rule(malaria, not(severe_joint_pain)).     % bone-breaking joint pain = dengue
-hard_rule(malaria, not(slow_heart_rate)).       % relative bradycardia = typhoid sign
+hard_rule(malaria, not(loss_of_smell)).
+hard_rule(malaria, not(right_lower_quad_pain)).
+hard_rule(malaria, not(rebound_tenderness)).
+hard_rule(malaria, not(severe_joint_pain)).
+hard_rule(malaria, not(slow_heart_rate)).
 
 % --- Gastroenteritis: GI only ---
 hard_rule(gastroenteritis, not(chest_pain)).
 hard_rule(gastroenteritis, not(neck_stiffness)).
 hard_rule(gastroenteritis, not(weight_gain)).
 hard_rule(gastroenteritis, not(loss_of_smell)).
-hard_rule(gastroenteritis, not(severe_joint_pain)).     % not a GI infection feature
-hard_rule(gastroenteritis, not(right_lower_quad_pain)). % RLQ pain = appendicitis, not gastro
-hard_rule(gastroenteritis, not(rebound_tenderness)).    % rebound = appendicitis
-hard_rule(gastroenteritis, not(slow_heart_rate)).       % typhoid-specific bradycardia
-hard_rule(gastroenteritis, not(rose_spot_rash)).        % typhoid-specific rash
+hard_rule(gastroenteritis, not(severe_joint_pain)).
+hard_rule(gastroenteritis, not(right_lower_quad_pain)).
+hard_rule(gastroenteritis, not(rebound_tenderness)).
+hard_rule(gastroenteritis, not(slow_heart_rate)).
+hard_rule(gastroenteritis, not(rose_spot_rash)).
 
-% --- Appendicitis: ruled out by diarrhea (favours gastroenteritis) ---
+% --- Appendicitis ---
 hard_rule(appendicitis, not(diarrhea)).
 hard_rule(appendicitis, not(weight_gain)).
 hard_rule(appendicitis, not(loss_of_smell)).
-hard_rule(appendicitis, not(neck_stiffness)).    % meningeal sign, not appendicitis
-hard_rule(appendicitis, not(cyclical_fever)).    % malarial pattern
-hard_rule(appendicitis, not(severe_joint_pain)). % dengue hallmark
-hard_rule(appendicitis, not(slow_heart_rate)).   % typhoid-specific
+hard_rule(appendicitis, not(neck_stiffness)).
+hard_rule(appendicitis, not(cyclical_fever)).
+hard_rule(appendicitis, not(severe_joint_pain)).
+hard_rule(appendicitis, not(slow_heart_rate)).
 
 % --- Meningitis: neurological emergency ---
 hard_rule(meningitis, not(diarrhea)).
 hard_rule(meningitis, not(weight_gain)).
 hard_rule(meningitis, not(runny_nose)).
-hard_rule(meningitis, not(loss_of_smell)).         % anosmia = COVID
-hard_rule(meningitis, not(severe_joint_pain)).     % dengue hallmark
-hard_rule(meningitis, not(right_lower_quad_pain)). % surgical sign
-hard_rule(meningitis, not(rebound_tenderness)).    % peritoneal sign
-hard_rule(meningitis, not(excessive_thirst)).      % metabolic sign
-hard_rule(meningitis, not(slow_heart_rate)).       % typhoid-specific
+hard_rule(meningitis, not(loss_of_smell)).
+hard_rule(meningitis, not(severe_joint_pain)).
+hard_rule(meningitis, not(right_lower_quad_pain)).
+hard_rule(meningitis, not(rebound_tenderness)).
+hard_rule(meningitis, not(excessive_thirst)).
+hard_rule(meningitis, not(slow_heart_rate)).
 
-% --- Migraine: pure neurological - no systemic or infectious ---
+% --- Migraine: pure neurological ---
 hard_rule(migraine, not(fever)).
 hard_rule(migraine, not(neck_stiffness)).
 hard_rule(migraine, not(vomiting)).
@@ -171,7 +170,7 @@ hard_rule(migraine, not(sore_throat)).
 hard_rule(migraine, not(diarrhea)).
 hard_rule(migraine, not(weight_gain)).
 
-% --- Strep throat: ENT bacterial, no GI or systemic ---
+% --- Strep throat: ENT bacterial ---
 hard_rule(strep_throat, not(cough)).
 hard_rule(strep_throat, not(diarrhea)).
 hard_rule(strep_throat, not(weight_gain)).
@@ -188,12 +187,12 @@ hard_rule(diabetes_t2, not(neck_stiffness)).
 hard_rule(diabetes_t2, not(chills)).
 hard_rule(diabetes_t2, not(runny_nose)).
 hard_rule(diabetes_t2, not(sneezing)).
-hard_rule(diabetes_t2, not(loss_of_smell)).         % anosmia = COVID
-hard_rule(diabetes_t2, not(severe_joint_pain)).     % dengue hallmark, not metabolic
-hard_rule(diabetes_t2, not(right_lower_quad_pain)). % surgical sign
-hard_rule(diabetes_t2, not(rebound_tenderness)).    % peritoneal sign
-hard_rule(diabetes_t2, not(skin_rash)).             % not a T2 diabetes feature
-hard_rule(diabetes_t2, not(slow_heart_rate)).       % typhoid-specific
+hard_rule(diabetes_t2, not(loss_of_smell)).
+hard_rule(diabetes_t2, not(severe_joint_pain)).
+hard_rule(diabetes_t2, not(right_lower_quad_pain)).
+hard_rule(diabetes_t2, not(rebound_tenderness)).
+hard_rule(diabetes_t2, not(skin_rash)).
+hard_rule(diabetes_t2, not(slow_heart_rate)).
 
 % --- Hypothyroidism: chronic systemic ---
 hard_rule(hypothyroidism, not(fever)).
@@ -668,21 +667,146 @@ all_candidates(List) :-
 
 
 % ================================================================
-% SECTION 4 - SCORING
+% SECTION 4 - SCORING  (IDF-weighted confidence)
+% ================================================================
+%
+% WHAT CHANGED AND WHY:
+%
+% Old formula: confidence = matched_count / total_symptoms * 100
+%
+% Problem: fatigue appears in 13/20 diseases, fever in 10/20.
+% Confirming them barely distinguishes anything, yet they counted
+% the same as body_aches (only in influenza) or loss_of_smell
+% (only in COVID-19). This caused diseases like pneumonia and
+% dengue to reach 50% confidence purely from fever+cough+fatigue,
+% which are generic flu-like symptoms.
+%
+% New formula: confidence = sum(idf_weight of matched symptoms)
+%                         / sum(idf_weight of ALL disease symptoms) * 100
+%
+% IDF weight = log(20 / number_of_diseases_that_have_this_symptom)
+% Specific symptom (body_aches, 1 disease)  -> weight 3.00 (high)
+% Generic symptom  (fatigue,   13 diseases) -> weight 0.43 (low)
+%
+% Effect: confirming loss_of_smell moves covid19 far more than
+% confirming fatigue does. Generic symptoms still help but need
+% to be accompanied by specific ones to reach the threshold.
+%
+% SAFE: verified that all diseases still reach 100% when all their
+% symptoms are confirmed, and all diseases reach the diagnosis
+% threshold (55%) when ~4-5 of their distinctive symptoms are confirmed.
 % ================================================================
 
-symptom_match_score(Disease, Score) :-
-    findall(S, (symptom_of(Disease, S), symptom(S)), Matched),
-    sort(Matched, Deduped),   % sort/2 removes duplicates - prevents confidence > 100%
-    length(Deduped, Score).
+% symptom_weight/2 — pre-computed IDF values: log(20 / disease_frequency)
+% These are static facts — no runtime computation needed.
+symptom_weight(body_aches,              3.00).
+symptom_weight(sneezing,                3.00).
+symptom_weight(runny_nose,              3.00).
+symptom_weight(difficulty_breathing,    3.00).
+symptom_weight(loss_of_taste,           3.00).
+symptom_weight(loss_of_smell,           3.00).
+symptom_weight(skin_rash,               3.00).
+symptom_weight(severe_joint_pain,       3.00).
+symptom_weight(pain_behind_eyes,        3.00).
+symptom_weight(sweating_episodes,       3.00).
+symptom_weight(cyclical_fever,          3.00).
+symptom_weight(rebound_tenderness,      3.00).
+symptom_weight(right_lower_quad_pain,   3.00).
+symptom_weight(confusion,               3.00).
+symptom_weight(visual_aura,             3.00).
+symptom_weight(one_sided_pain,          3.00).
+symptom_weight(pulsating_pain,          3.00).
+symptom_weight(swollen_lymph_nodes,     3.00).
+symptom_weight(tonsillar_exudate,       3.00).
+symptom_weight(frequent_urination,      3.00).
+symptom_weight(slow_wound_healing,      3.00).
+symptom_weight(excessive_thirst,        3.00).
+symptom_weight(blurred_vision,          3.00).
+symptom_weight(dry_skin,                3.00).
+symptom_weight(cold_intolerance,        3.00).
+symptom_weight(weight_gain,             3.00).
+symptom_weight(hair_loss,               3.00).
+symptom_weight(pale_skin,               3.00).
+symptom_weight(cold_hands_and_feet,     3.00).
+symptom_weight(rose_spot_rash,          3.00).
+symptom_weight(slow_heart_rate,         3.00).
+symptom_weight(night_sweats,            3.00).
+symptom_weight(weight_loss,             3.00).
+symptom_weight(haemoptysis,             3.00).
+symptom_weight(chronic_cough,           3.00).
+symptom_weight(vesicular_rash,          3.00).
+symptom_weight(itchy_rash,              3.00).
+symptom_weight(burning_epigastric_pain, 3.00).
+symptom_weight(sudden_onset,            2.30).
+symptom_weight(sore_throat,             2.30).
+symptom_weight(chest_pain,              2.30).
+symptom_weight(productive_cough,        2.30).
+symptom_weight(shortness_of_breath,     2.30).
+symptom_weight(diarrhea,                2.30).
+symptom_weight(low_grade_fever,         2.30).
+symptom_weight(cramping,                2.30).
+symptom_weight(neck_stiffness,          2.30).
+symptom_weight(constipation,            2.30).
+symptom_weight(dizziness,               2.30).
+symptom_weight(loss_of_appetite,        2.30).
+symptom_weight(bloating,                2.30).
+symptom_weight(chills,                  1.90).
+symptom_weight(abdominal_pain,          1.90).
+symptom_weight(vomiting,                1.90).
+symptom_weight(light_sensitivity,       1.90).
+symptom_weight(cough,                   1.61).
+symptom_weight(nausea,                  1.39).
+symptom_weight(headache,                0.69).
+symptom_weight(fever,                   0.69).
+symptom_weight(fatigue,                 0.43).
 
+% symptom_idf_weight(+Symptom, -Weight)
+% Falls back to 1.0 for any symptom not explicitly listed above.
+% This makes the system safe against knowledge_base.pl additions.
+symptom_idf_weight(S, W) :-
+    ( symptom_weight(S, W) -> true ; W = 1.0 ).
+
+% symptom_match_score(+Disease, -Score)
+% Weighted sum of IDF weights for confirmed symptoms that belong to Disease.
+symptom_match_score(Disease, Score) :-
+    findall(W,
+        ( symptom_of(Disease, S), symptom(S),
+          symptom_idf_weight(S, W) ),
+    Weights),
+    sum_list(Weights, Score).
+
+% total_weight(+Disease, -Total)
+% Weighted sum of IDF weights for Disease symptoms the patient has NOT denied.
+%
+% WHY denied symptoms are excluded from the denominator:
+%   A denied symptom cannot contribute to the numerator, so keeping it in
+%   the denominator permanently caps the score below 100%.
+%   Example: TB (8 symptoms). Denying haemoptysis (weight 3.00) with the
+%   old formula capped TB at 84.5% even if every other symptom was confirmed.
+%   In the reported session (4 specific TB symptoms confirmed, haemoptysis
+%   denied), TB scored 58.5% and the system returned Inconclusive.
+%   Excluding denied symptoms is medically sound: haemoptysis is a late-stage
+%   symptom absent in many real TB cases. Not having it now should not
+%   permanently penalise the diagnosis.
+%   Safety: a denied HALLMARK symptom (e.g. chronic_cough for TB) already
+%   eliminates the disease via denied_hallmark_symptom before confidence
+%   is ever calculated, so this cannot cause false positives.
+total_weight(Disease, Total) :-
+    findall(W,
+        ( symptom_of(Disease, S),
+          \+ denied(S),
+          symptom_idf_weight(S, W) ),
+    Weights),
+    sum_list(Weights, Total).
+
+% Keep total_symptoms/2 for any code that references it (bridge.py get_status)
 total_symptoms(Disease, Total) :-
     findall(S, symptom_of(Disease, S), All),
     length(All, Total).
 
 confidence(Disease, Pct) :-
     symptom_match_score(Disease, Score),
-    total_symptoms(Disease, Total),
+    total_weight(Disease, Total),
     Total > 0,
     Pct is (Score / Total) * 100.
 
@@ -692,9 +816,12 @@ confidence(Disease, Pct) :-
 % ================================================================
 
 :- dynamic diagnosis_threshold/1.
-% Threshold lowered from 70% to 65% to match the early-exit threshold in bridge.py.
-% Having two different thresholds caused cases where the early exit fired at 65%
-% but the full loop never diagnosed at 70%, leading to inconsistent behaviour.
+% Threshold stays at 65%.
+% IDF scores reach 100% when all symptoms are confirmed, so 65% is
+% still the right gate. Lowering to 55% caused premature diagnosis:
+% body_aches + sudden_onset + fever reached 56.4% for influenza and
+% triggered a result after only 1 yes/no question with 4 unasked symptoms.
+% The early-exit check in bridge.py and consultation.py uses the same value.
 diagnosis_threshold(65).
 
 diagnosis(Disease) :-
@@ -702,10 +829,14 @@ diagnosis(Disease) :-
     confidence(Disease, Pct),
     diagnosis_threshold(Threshold),
     Pct >= Threshold,
-    min_confirmed_symptoms(5),
+    min_confirmed_symptoms(3),
     is_best_candidate(Disease, Pct).
 
-% Require at least 3 confirmed symptoms before any diagnosis
+% Require at least 3 confirmed symptoms before any diagnosis.
+% Lowered from 5 to 3: with IDF weighting, 3 specific symptoms
+% (e.g. loss_of_smell + loss_of_taste + fever for COVID) carry
+% enough weight to reach the threshold on their own. Requiring 5
+% was conservative for the old flat scoring but unnecessary here.
 min_confirmed_symptoms(Min) :-
     findall(S, symptom(S), Confirmed),
     length(Confirmed, Count),
