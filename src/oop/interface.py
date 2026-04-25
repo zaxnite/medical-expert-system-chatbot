@@ -341,7 +341,7 @@ class MedicalInterface:
         print(_c(THIN_BORDER, CYAN))
         print()
         print("  Please describe how you are feeling in your own words.")
-        print(_c("  (or press Enter to skip to yes/no questions)", "[90m"))
+        print(_c("  (or press Enter to skip to yes/no questions)", "\033[90m"))
         print()
 
         try:
@@ -356,13 +356,13 @@ class MedicalInterface:
 
         # Send to Lisp for processing
         print()
-        print(_c("  Processing...", "[90m"))
+        print(_c("  Processing...", "\033[90m"))
         result = self._consultation.preload_symptoms(raw)
         found   = result.get("found",   [])
         negated = result.get("negated", [])
 
         if not found and not negated:
-            print(_c("  No specific symptoms detected in your description.", "[93m"))
+            print(_c("  No specific symptoms detected in your description.", "\033[93m"))
             print(  "  We will ask you yes/no questions instead.")
             print()
             self._consultation.intake_complete()  # unblock reasoning thread
@@ -374,13 +374,13 @@ class MedicalInterface:
             print(_c("  Symptoms detected in your description:", BOLD))
             for s in found:
                 display = s.replace("_", " ").title()
-                print(_c(f"    + {display}", "[92m"))
+                print(_c(f"    + {display}", "\033[92m"))
 
         if negated:
             print(_c("  Symptoms you indicated you do NOT have:", BOLD))
             for s in negated:
                 display = s.replace("_", " ").title()
-                print(_c(f"    - {display}", "[91m"))
+                print(_c(f"    - {display}", "\033[91m"))
 
         print()
 
@@ -393,7 +393,7 @@ class MedicalInterface:
             return []
 
         if confirm not in ("yes", "y"):
-            print(_c("  No problem — we will ask you questions instead.", "[90m"))
+            print(_c("  No problem — we will ask you questions instead.", "\033[90m"))
             print()
             # Retract Prolog facts asserted by preload_symptoms() before clearing Python lists.
             # Without this, symptom/1 facts stay in Prolog and inflate confidence scores
@@ -443,8 +443,8 @@ class MedicalInterface:
             )
 
         total = len(found) + len(negated)
-        print(_c(f"  Great — {total} symptom(s) recorded from your description.", "[92m"))
-        print(_c("  We will now ask about any remaining symptoms.", "[90m"))
+        print(_c(f"  Great — {total} symptom(s) recorded from your description.", "\033[92m"))
+        print(_c("  We will now ask about any remaining symptoms.", "\033[90m"))
         print()
         # Update displayed candidate count to reflect pre-loaded symptoms
         try:

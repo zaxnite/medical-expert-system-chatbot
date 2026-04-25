@@ -1,9 +1,7 @@
 # consultation.py
 # Medical Expert System - BCS 222 Programming Paradigms
 # Controller layer - connects UserSession (OOP state) with PrologBridge (inference engine).
-# Neither session.py nor bridge.py know about each other; this class is the glue.
-#
-# OOP is a good fit here because managing a stateful multi-step workflow like this
+# This code connects session.py and bridge.py.
 # (start -> ask -> answer -> diagnose -> end) needs an object that owns the full flow.
 # The interface layer (CLI or GUI) can swap out without touching this controller.
 
@@ -41,15 +39,12 @@ except ImportError:
 # ----------------------------------------------------------------
 
 class ConsultationEvent:
-    """
-    Event types emitted by the Consultation controller.
-    The interface layer registers callbacks for these.
-    """
-    QUESTION_READY  = "question_ready"   # a new question is available
-    ANSWER_RECORDED = "answer_recorded"  # patient answer was processed
-    DIAGNOSIS_READY = "diagnosis_ready"  # final result is available
-    STATUS_UPDATE   = "status_update"    # candidate count changed
-    ERROR           = "error"            # something went wrong
+    # Event types for consultation
+    QUESTION_READY  = "question_ready"  
+    ANSWER_RECORDED = "answer_recorded" 
+    DIAGNOSIS_READY = "diagnosis_ready"  
+    STATUS_UPDATE   = "status_update"    
+    ERROR           = "error"            
 
 
 # ----------------------------------------------------------------
@@ -57,34 +52,16 @@ class ConsultationEvent:
 # ----------------------------------------------------------------
 
 class Consultation:
-    """
-    Drives a single patient consultation from start to finish.
-
-    Responsibilities:
-      - Initialise and reset the Prolog engine via bridge
-      - Feed patient answers to Prolog one step at a time
-      - Receive next questions and pass them to the interface
-      - Detect completion and build DiagnosisResult
-      - Update UserSession after every exchange
-      - Run the reasoning engine on a background thread (concurrency requirement)
-
-    Usage:
-        session      = UserSession("Ahmed", age=28)
-        bridge       = PrologBridge(prolog_dir)
-        bridge.load()
-        consultation = Consultation(session, bridge)
-        consultation.start()
-        # interface layer then calls consultation.answer(True/False)
-    """
+    # Main controller for consultation flow
 
     def __init__(self, session: UserSession, bridge: PrologBridge,
                  lisp_dir=None):
         self._session    = session
         self._bridge     = bridge
         self._lisp       = LispConnector(lisp_dir) if (lisp_dir and LispConnector) else None
-        self._preloaded: list[str] = []        # symptoms confirmed by Lisp
-        self._intake_candidates: int = 15       # candidates after free-text intake
-        self._preloaded_denied: list[str] = []  # symptoms denied by Lisp
+        self._preloaded: list[str] = []        
+        self._intake_candidates: int = 15       
+        self._preloaded_denied: list[str] = []  
 
         # Current pending question - set by Prolog, read by interface
         self._current_symptom:  Optional[str] = None
@@ -122,19 +99,12 @@ class Consultation:
     # ----------------------------------------------------------------
 
     def on(self, event: str, callback: Callable) -> None:
-        """
-        Register a callback for a consultation event.
-        The interface layer uses this to hook into the flow.
-
-        Example:
-            consultation.on(ConsultationEvent.QUESTION_READY,
-                            lambda q: print(q['question']))
-        """
+        # Register callback for event
         if event in self._callbacks:
             self._callbacks[event].append(callback)
 
     def _emit(self, event: str, data: dict = None) -> None:
-        """Fire all callbacks registered for this event."""
+        # Fire callbacks for this event
         for cb in self._callbacks.get(event, []):
             try:
                 cb(data or {})
@@ -146,11 +116,7 @@ class Consultation:
     # ----------------------------------------------------------------
 
     def preload_symptoms(self, raw_text: str) -> dict:
-        """
-        Called BEFORE start() when the patient describes symptoms in free text.
-        Uses Lisp to extract symptom atoms, asserts them into Prolog, and returns
-        what was found so the interface can confirm with the patient.
-        """
+        # Extract symptoms from free text
         if not self._lisp:
             return {"found": [], "negated": [], "source": "none"}
 
@@ -158,10 +124,7 @@ class Consultation:
         to_assert = result.get("to_assert", [])
         to_deny   = result.get("to_deny",   [])
 
-        # Pre-assert into Prolog using module-qualified assertz.
-        # diagnosis_rules:next_question/1 reads symptom/1 and asked/1 from its own
-        # module namespace. Bare assertz writes to global 'user' namespace which
-        # next_question/1 never sees.
+        # Assert symptoms into Prolog
         for s in to_assert:
             list(self._bridge._prolog.query(
                 f"assertz(diagnosis_rules:symptom({s}))"
@@ -189,51 +152,27 @@ class Consultation:
         }
 
     def intake_complete(self) -> None:
-        """
-        Called by the interface after free-text intake is done.
-        Unblocks the reasoning thread to start asking questions.
-
-        preload_symptoms() already wrote symptom/1, denied/1, and asked/1 into the
-        diagnosis_rules module namespace using module-qualified assertz. Re-asserting
-        here causes duplicate facts in Prolog which makes findall() in
-        symptom_match_score count the same symptom twice, producing confidence > 100%.
-        This method only sets the gate event - no re-assertion.
-        """
+        # Signal intake is done
         self._intake_ready.set()
 
     def start(self) -> None:
-        """
-        Start the consultation.
-        Resets Prolog session, transitions UserSession to ACTIVE,
-        then launches the reasoning thread which fetches the first question.
-        """
+        # Start consultation and launch reasoning thread
         self._session.start()
         self._bridge.reset_session()
 
-        # Clear the intake gate - reasoning thread will wait until
-        # intake_complete() is called by the interface.
-        # Do NOT clear _preloaded/_preloaded_denied here.
-        # preload_symptoms() populates them before start() is called,
-        # and _get_next_skipping_preloaded() reads them to build the skip-set.
-        # Clearing here causes the bot to re-ask about symptoms already described.
+        # Wait for intake to complete
         self._intake_ready.clear()
 
-        # Launch reasoning on background thread
+        # Launch reasoning thread
         self._reasoning_thread = threading.Thread(
             target=self._reasoning_loop,
             name="ReasoningThread",
-            daemon=True   # thread dies if main program exits
+            daemon=True
         )
         self._reasoning_thread.start()
 
     def answer(self, response: bool) -> None:
-        """
-        Called by the interface layer when patient answers yes/no.
-        Thread-safe - signals the reasoning thread to continue.
-
-        Parameters:
-            response: True = yes, False = no
-        """
+        # Record patient answer
         if not self._session.is_active:
             # Session timed out - silently ignore late answers
             return
@@ -245,20 +184,13 @@ class Consultation:
         self._answer_event.set()
 
     def wait_for_question(self, timeout: float = 10.0) -> bool:
-        """
-        Block until the reasoning thread has a new question ready.
-        Returns True if a question arrived, False if timed out.
-        Used by synchronous CLI interface.
-        """
+        # Wait for next question
         result = self._question_event.wait(timeout=timeout)
         self._question_event.clear()
         return result
 
     def wait_for_completion(self, timeout: float = 120.0) -> bool:
-        """
-        Block until the consultation is fully complete.
-        Returns True if completed, False if timed out.
-        """
+        # Wait for consultation to finish
         return self._done_event.wait(timeout=timeout)
 
     # ----------------------------------------------------------------
@@ -266,30 +198,18 @@ class Consultation:
     # ----------------------------------------------------------------
 
     def _reasoning_loop(self) -> None:
-        """
-        Runs on the background thread.
-        Fetches first question, then loops: wait for answer ->
-        send to Prolog -> get next action -> emit event.
-
-        This is the concurrency architecture the assignment requires:
-          Main thread      : handles UI (input/output)
-          Reasoning thread : handles Prolog inference
-        threading.Event objects synchronize them cleanly.
-        """
+        # Background reasoning thread
         try:
-            # Wait until free-text intake is complete
-            # (interface calls intake_complete() to unblock this)
-            self._intake_ready.wait(timeout=120.0)  # wait up to 2 min for patient to describe symptoms
+            # Wait for intake to complete
+            self._intake_ready.wait(timeout=120.0)
 
-            # Get first question from Prolog, skipping preloaded ones
-            # (all assertz calls in preload_symptoms complete synchronously
-            # before intake_complete() calls set() - no sleep needed)
+            # Get first question
             action = self._get_next_skipping_preloaded()
             self._handle_action(action)
 
-            # Main loop
+            # Loop until done
             while self._session.is_active:
-                # Wait for the interface layer to provide an answer
+                # Wait for patient answer
                 answered = self._answer_event.wait(timeout=120.0)
                 self._answer_event.clear()
 
@@ -306,7 +226,7 @@ class Consultation:
                 if response is None:
                     continue
 
-                # Record in session BEFORE sending to Prolog so the log is always ahead
+                # Record answer
                 self._session.record_answer(
                     symptom          = self._current_symptom,
                     question_text    = self._current_question,
@@ -319,20 +239,17 @@ class Consultation:
                     "answer":  response
                 })
 
-                # Send answer to Prolog and get next action
+                # Send to Prolog
                 action = self._bridge.step(
                     self._current_symptom, response
                 )
-                # Skip any pre-loaded symptoms that slip through
+                # Skip preloaded symptoms
                 while (action.get("action") == "ask" and
                        action.get("symptom") in self._preloaded + self._preloaded_denied):
                     self._bridge.assert_symptom(action["symptom"])
                     action = self._bridge.get_first_question()
                 
-                # If only one candidate remains, use the early-exit path.
-                # Still require >= 3 symptoms belonging to the disease -
-                # prevents firing on 2 generic symptoms that happened to
-                # eliminate everything else by denial.
+                # Early exit if only one disease left
                 if action.get("action") == "ask":
                     candidate_count = self._get_candidate_count()
                     if candidate_count == 1:
@@ -355,15 +272,10 @@ class Consultation:
             self._finish_incomplete(f"Error: {e}")
 
     def _get_next_skipping_preloaded(self) -> dict:
-        """
-        Gets next question, guaranteed to skip preloaded symptoms.
-        Uses direct Prolog assertz into diagnosis_rules module namespace
-        so next_question/1 sees the facts correctly.
-        """
+        # Get next question, skip preloaded ones
         skip = set(self._preloaded + self._preloaded_denied)
 
-        # Write directly into diagnosis_rules module namespace -
-        # this is the only reliable way across pyswip versions
+        # Mark as asked
         for s in skip:
             try:
                 list(self._bridge._prolog.query(
@@ -371,10 +283,6 @@ class Consultation:
                 ))
             except Exception:
                 pass
-
-        # NOTE: symptom/1 and denied/1 facts were already written by
-        # preload_symptoms() using module-qualified assertz. Do NOT re-assert
-        # here - duplicate facts inflate confidence scores above 100%.
 
         # Fetch next question - should skip all preloaded
         for _ in range(30):
@@ -400,10 +308,7 @@ class Consultation:
         return self._bridge.get_first_question()
 
     def _handle_action(self, action: dict) -> None:
-        """
-        Route the action dict returned by bridge.step() or
-        bridge.get_first_question() to the correct handler.
-        """
+        # Handle action from Prolog
         if action["action"] == "ask":
             self._current_symptom  = action["symptom"]
             self._current_question = action["question"]
@@ -436,7 +341,7 @@ class Consultation:
     # ----------------------------------------------------------------
 
     def _finish_with_result(self, action: dict) -> None:
-        """Build DiagnosisResult and complete the session."""
+        # Complete with diagnosis result
         disease    = action.get("disease", "unknown")
         confidence = min(100.0, action.get("confidence", 0.0))
         desc       = action.get("description", "")
@@ -469,7 +374,7 @@ class Consultation:
         self._done_event.set()
 
     def _finish_incomplete(self, reason: str = "") -> None:
-        """End session without a diagnosis."""
+        # End without diagnosis
         self._session.end_incomplete()
         self._emit(ConsultationEvent.DIAGNOSIS_READY, {
             "disease":       "insufficient_data",
@@ -484,7 +389,7 @@ class Consultation:
     # ----------------------------------------------------------------
 
     def _get_candidate_count(self) -> int:
-        """How many diseases are still possible right now."""
+        # Count possible diseases
         try:
             status = self._bridge.get_status()
             return len(status.get("candidates", []))
@@ -513,14 +418,11 @@ class Consultation:
 
     @property
     def question_number(self) -> int:
-        """Next question number to display (excludes intake entries)."""
+        # Next question number
         return self._session.log.asked_question_count + 1
 
     def get_progress(self) -> dict:
-        """
-        Returns current consultation progress.
-        Used by the interface to show a progress indicator.
-        """
+        # Return progress info
         status = {}
         try:
             status = self._bridge.get_status()
@@ -544,13 +446,7 @@ def create_consultation(patient_name: str,
                         prolog_dir,
                         patient_age: int = None,
                         lisp_dir=None) -> tuple[Consultation, UserSession]:
-    """
-    Factory function - creates and wires up everything needed for a
-    consultation in one call.
-
-    Returns (consultation, session) so the interface layer has direct
-    access to both.
-    """
+    # Create and set up consultation
     session = UserSession(patient_name, patient_age)
     bridge  = PrologBridge(prolog_dir)
     bridge.load()

@@ -335,7 +335,6 @@ symptom_question(dizziness,           "Are you feeling dizzy or lightheaded?").
 symptom_question(cold_hands_and_feet, "Are your hands and feet often cold?").
 symptom_question(rose_spot_rash,      "Do you have small rose-coloured spots on your abdomen?").
 symptom_question(slow_heart_rate,     "Have you been told your heart rate is unusually slow?").
-
 symptom_question(chronic_cough,          "Have you had a persistent cough lasting more than 3 weeks?").
 symptom_question(night_sweats,           "Do you wake up drenched in sweat at night?").
 symptom_question(weight_loss,            "Have you lost weight recently without trying?").

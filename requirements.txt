@@ -1,1 +1,10 @@
-pyswip==0.2.10
+# Medical Expert System - BCS 222 Programming Paradigms
+# Python Dependencies
+
+# Core Paradigm Integration
+pyswip==0.2.10      # Python-SWI-Prolog bridge for logic programming layer
+
+# External System Dependencies (install separately):
+# - SWI-Prolog >= 9.0.0: https://www.swi-prolog.org/
+# - SBCL >= 2.3.0 (Steel Bank Common Lisp): http://www.sbcl.org/
+# On Windows, ensure both are in PATH or specify their locations

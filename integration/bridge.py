@@ -1,19 +1,19 @@
 # bridge.py
 # Medical Expert System - BCS 222 Programming Paradigms
 # Connects Python to SWI-Prolog. Loads the Prolog files and exposes
-# clean functions the OOP layer calls. No business logic lives here.
 
 import os
 import ctypes
 from pathlib import Path
 from pyswip import Prolog, Functor, Variable, Atom
+import re
 
 # Increase stack before the engine starts.
 # Default stack is too small for 20 diseases and causes crashes on some systems.
 os.environ.setdefault("SWI_HOME_DIR", "")
 os.environ["SWIPL_STACK_LIMIT"] = "256m"
 
-# Resolve path to prolog/ so this works regardless of where Python is run from.
+
 _PROLOG_DIR = Path(__file__).parent.parent / "src" / "prolog"
 
 
@@ -46,8 +46,7 @@ class PrologBridge:
     def load(self) -> None:
         """
         Load all Prolog files into the engine.
-        Must be called once before any queries.
-        Order matters: knowledge_base -> diagnosis_rules -> inference_engine
+        knowledge_base -> diagnosis_rules -> inference_engine
         """
         if self._loaded:
             return
@@ -157,12 +156,10 @@ class PrologBridge:
         """
         self._require_loaded()
 
-        # Record patient answer (assert_symptom/deny_symptom marks symptom as asked internally)
         if answer:
             self.assert_symptom(symptom)
         else:
             self.deny_symptom(symptom)
-        # Mark as asked so next_question skips this symptom
         list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
         # Early exit: if only 1 candidate remains with confidence >= 60%
@@ -184,7 +181,7 @@ class PrologBridge:
         if done:
             return self._build_result()
 
-        # 3. Get next question
+        # Get next question
         nq = self.get_next_question()
         if nq is None:
             return self._build_result()
@@ -301,9 +298,7 @@ class PrologBridge:
     def _parse_tests(self, raw) -> list[dict]:
         """
         Convert Prolog T-C pairs into Python dicts.
-        pyswip returns these as strings: "-(rapid_flu_test, confirms_viral_strain)"
         """
-        import re
         parsed = []
         if not raw:
             return parsed
@@ -393,10 +388,6 @@ class PrologBridge:
         """
         Run any Prolog query and return results as a list of dicts.
         Used for testing and predicates not yet wrapped above.
-
-        Example:
-            bridge.query("symptom_of(influenza, S)")
-            -> [{'S': 'fever'}, {'S': 'cough'}, ...]
         """
         self._require_loaded()
         return [

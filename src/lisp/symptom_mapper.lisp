@@ -4,15 +4,6 @@
 ;;;; Role: Pure declarative mapping tables.
 ;;;;       Converts natural language phrases into Prolog symptom
 ;;;;       atoms used by knowledge_base.pl (20 diseases).
-;;;;
-;;;; Disease labels shown for symptoms specific to 1-3 diseases.
-;;;; Symptoms shared by 4+ diseases have no label.
-;;;;
-;;;; Overlap policy: shorter generic phrases (cough, fever, rash)
-;;;; are kept because find-all-matches collects ALL matches —
-;;;; both the generic and the specific atom will fire, which is
-;;;; the correct behaviour. Dangerous overlaps (where the short
-;;;; phrase maps to the WRONG atom) have been removed or rephrased.
 ;;;; ================================================================
 
 (defparameter *symptom-map*
@@ -21,7 +12,7 @@
     ;; GROUP A — RESPIRATORY SYMPTOMS
     ;; ================================================================
 
-    ;; --- fever (shared by 10+ diseases — no label) ---
+    ;; --- fever ---
     ("fever"                        . fever)
     ("high temperature"             . fever)
     ("high temp"                    . fever)
@@ -62,12 +53,6 @@
     ("recurrent fever"              . "cyclical_fever")
 
     ;; --- cough (shared by 4+ diseases — no label) ---
-    ;; NOTE: "cough" and "coughing" are intentionally NOT listed as bare
-    ;; single-word phrases because string-contains-p would match them inside
-    ;; "productive cough", "chronic cough", "coughing up phlegm" etc.,
-    ;; causing the generic atom to fire alongside the specific one.
-    ;; Only phrases that cannot appear inside a more specific cough entry
-    ;; are listed here.
     ("i have a cough"              . cough)
     ("got a cough"                 . cough)
     ("have a cough"                . cough)
@@ -165,7 +150,7 @@
     ;; GROUP B — SYSTEMIC / INFECTIOUS SYMPTOMS
     ;; ================================================================
 
-    ;; --- fatigue (shared by 13 diseases — no label) ---
+    ;; --- fatigue ---
     ("fatigue"                      . fatigue)
     ("tired"                        . fatigue)
     ("tiredness"                    . fatigue)
@@ -280,7 +265,7 @@
     ;; GROUP C — HEAD / NEURO / ENT SYMPTOMS
     ;; ================================================================
 
-    ;; --- headache (shared by 9 diseases — no label) ---
+    ;; --- headache ---
     ("headache"                     . headache)
     ("head pain"                    . headache)
     ("head hurts"                   . headache)
@@ -484,7 +469,7 @@
     ;; GROUP D — GASTROINTESTINAL SYMPTOMS
     ;; ================================================================
 
-    ;; --- nausea (shared by 5 diseases — no label) ---
+    ;; --- nausea ---
     ("nausea"                       . nausea)
     ("nauseous"                     . nausea)
     ("feel sick"                    . nausea)

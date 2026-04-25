@@ -22,7 +22,7 @@ import json
 # ----------------------------------------------------------------
 
 class SessionState(Enum):
-    """Lifecycle states of a consultation session."""
+    # Lifecycle states of a consultation session
     PENDING    = auto()   # created, not yet started
     ACTIVE     = auto()   # questions being asked
     COMPLETE   = auto()   # diagnosis reached
@@ -30,7 +30,7 @@ class SessionState(Enum):
 
 
 class ConfidenceLevel(Enum):
-    """Human-readable confidence tier derived from numeric %."""
+    # Human-readable confidence tier
     HIGH      = "High"
     MODERATE  = "Moderate"
     LOW       = "Low"
@@ -53,10 +53,7 @@ class ConfidenceLevel(Enum):
 
 @dataclass
 class QAEntry:
-    """
-    A single question-answer exchange in the consultation.
-    Immutable once logged - never modified after creation.
-    """
+    # A single question-answer exchange
     symptom:       str
     question_text: str
     answer:        bool
@@ -64,6 +61,7 @@ class QAEntry:
     candidates_remaining: int = 0  # how many diseases were still possible at this point
 
     def to_dict(self) -> dict:
+        # Convert to dictionary format
         return {
             "symptom":              self.symptom,
             "question":             self.question_text,
@@ -75,10 +73,7 @@ class QAEntry:
 
 @dataclass
 class DiagnosisResult:
-    """
-    Final output of a consultation.
-    Produced by the inference engine, stored in MedicalRecord.
-    """
+    # Final diagnosis result
     disease:      str
     confidence:   float
     description:  str
@@ -88,9 +83,11 @@ class DiagnosisResult:
 
     @property
     def confidence_level(self) -> ConfidenceLevel:
+        # Convert confidence % to readable tier
         return ConfidenceLevel.from_pct(self.confidence)
 
     def to_dict(self) -> dict:
+        # Convert to dictionary format
         return {
             "disease":       self.disease,
             "confidence":    round(self.confidence, 1),
@@ -107,13 +104,7 @@ class DiagnosisResult:
 # ----------------------------------------------------------------
 
 class MedicalRecord:
-    """
-    Tracks the patient's confirmed and denied symptoms.
-    This is the source of truth for what the patient has reported.
-
-    Kept separate from ConsultationLog because symptom data is clinical
-    and Q&A history is conversational - they have different lifetimes and formats.
-    """
+    # Tracks confirmed and denied symptoms
 
     def __init__(self, patient_name: str):
         self._patient_name   = patient_name
@@ -129,28 +120,28 @@ class MedicalRecord:
 
     @property
     def confirmed_symptoms(self) -> list[str]:
-        """Symptoms the patient said YES to."""
+        # Symptoms patient confirmed
         return list(self._confirmed)
 
     @property
     def denied_symptoms(self) -> list[str]:
-        """Symptoms the patient said NO to."""
+        # Symptoms patient denied
         return list(self._denied)
 
     @property
     def all_reported(self) -> list[str]:
-        """Every symptom that has been asked about."""
+        # All symptoms asked about
         return self._confirmed + self._denied
 
     # ---- mutation ----
 
     def record_yes(self, symptom: str) -> None:
-        """Patient confirmed this symptom."""
+        # Record confirmed symptom
         if symptom not in self._confirmed:
             self._confirmed.append(symptom)
 
     def record_no(self, symptom: str) -> None:
-        """Patient denied this symptom."""
+        # Record denied symptom
         if symptom not in self._denied:
             self._denied.append(symptom)
 
@@ -163,6 +154,7 @@ class MedicalRecord:
     # ---- export ----
 
     def to_dict(self) -> dict:
+        # Convert to dictionary format
         return {
             "patient_name":       self._patient_name,
             "confirmed_symptoms": self._confirmed,
@@ -181,11 +173,7 @@ class MedicalRecord:
 # ----------------------------------------------------------------
 
 class ConsultationLog:
-    """
-    Records every Q&A exchange in the consultation.
-    Prevents the chatbot from asking the same question twice
-    by tracking which symptoms have already been covered.
-    """
+    # Records every Q&A exchange
 
     def __init__(self):
         self._entries:   list[QAEntry] = []
@@ -197,12 +185,7 @@ class ConsultationLog:
     def log(self, symptom: str, question_text: str,
             answer: bool, candidates_remaining: int = 0,
             from_intake: bool = False) -> QAEntry:
-        """
-        Record a single Q&A exchange.
-        from_intake=True means the symptom came from free-text - it is stored
-        in the full record but not counted as a system question in asked_question_count.
-        Returns the created QAEntry.
-        """
+        # Record a single Q&A exchange
         entry = QAEntry(
             symptom               = symptom,
             question_text         = question_text,
@@ -218,7 +201,7 @@ class ConsultationLog:
     # ---- queries ----
 
     def already_asked(self, symptom: str) -> bool:
-        """O(1) check - has this symptom already been asked?"""
+        # Check if symptom already asked
         return symptom in self._asked_set
 
     @property
@@ -227,12 +210,12 @@ class ConsultationLog:
 
     @property
     def question_count(self) -> int:
-        """Total entries including free-text intake."""
+        # Total entries including intake
         return len(self._entries)
 
     @property
     def asked_question_count(self) -> int:
-        """Only questions asked by the system (excludes intake)."""
+        # Questions asked by system only
         return len(self._entries) - self._intake_count
 
     @property
@@ -252,6 +235,7 @@ class ConsultationLog:
     # ---- export ----
 
     def to_dict(self) -> dict:
+        # Convert to dictionary format
         return {
             "total_questions": self.question_count,
             "yes_answers":     self.yes_count,
@@ -270,15 +254,7 @@ class ConsultationLog:
 # ----------------------------------------------------------------
 
 class UserSession:
-    """
-    Root object for a single patient consultation.
-    Owns the MedicalRecord and ConsultationLog.
-    Tracks lifecycle state and timing.
-
-    The interface layer creates one UserSession per consultation and passes it
-    to the Consultation controller. This is the persistence layer the assignment
-    requires - OOP handles all conversation state here.
-    """
+    # Root object for a patient consultation
 
     def __init__(self, patient_name: str, patient_age: Optional[int] = None):
         self.session_id:   str            = str(uuid.uuid4())[:8]
@@ -301,7 +277,7 @@ class UserSession:
     # ---- lifecycle ----
 
     def start(self) -> None:
-        """Mark session as active and record start time."""
+        # Mark session active and record start time
         if self.state != SessionState.PENDING:
             raise RuntimeError(
                 f"Cannot start session in state {self.state}"
@@ -310,13 +286,13 @@ class UserSession:
         self._started_at = datetime.now()
 
     def complete(self, result: DiagnosisResult) -> None:
-        """Mark session complete with a diagnosis result."""
+        # Mark session complete with diagnosis
         self.result = result
         self.state  = SessionState.COMPLETE
         self._finished_at = datetime.now()
 
     def end_incomplete(self) -> None:
-        """Mark session ended without a clear diagnosis."""
+        # Mark session ended without diagnosis
         self.state = SessionState.INCOMPLETE
         self._finished_at = datetime.now()
 
@@ -325,11 +301,7 @@ class UserSession:
     def record_answer(self, symptom: str, question_text: str,
                       answer: bool, candidates_remaining: int = 0,
                       from_intake: bool = False) -> None:
-        """
-        Single call to update both MedicalRecord and ConsultationLog.
-        from_intake=True means this symptom came from the free-text phase -
-        it goes into MedicalRecord but is NOT counted in asked_question_count.
-        """
+        # Update medical record and consultation log
         # Update medical record
         if answer:
             self.record.record_yes(symptom)
@@ -346,7 +318,7 @@ class UserSession:
 
     @property
     def duration_seconds(self) -> Optional[float]:
-        """How long the consultation took in seconds."""
+        # How long consultation took in seconds
         if self._started_at and self._finished_at:
             return (self._finished_at - self._started_at).total_seconds()
         return None
@@ -354,7 +326,7 @@ class UserSession:
     # ---- export / reporting ----
 
     def to_dict(self) -> dict:
-        """Full session export used for reports and saving logs."""
+        # Full session export
         return {
             "session_id":   self.session_id,
             "patient_name": self.patient_name,
@@ -369,12 +341,12 @@ class UserSession:
         }
 
     def export_json(self, filepath: str) -> None:
-        """Save full session to a JSON file."""
+        # Save full session to JSON file
         with open(filepath, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
 
     def summary(self) -> str:
-        """Short human-readable summary for terminal display."""
+        # Short human-readable summary
         lines = [
             f"Session {self.session_id} — {self.patient_name}",
             f"State    : {self.state.name}",

@@ -4,14 +4,6 @@
 ;;;; Role: Stateless text processing pipeline.
 ;;;;       Takes raw patient input strings and maps them to
 ;;;;       structured symptom data the Prolog engine understands.
-;;;;
-;;;; Functional paradigm justification:
-;;;;   Every function here is PURE — given the same input it
-;;;;   always returns the same output with zero side effects.
-;;;;   This makes the pipeline trivially testable and safe to
-;;;;   call from multiple threads without any synchronisation.
-;;;;   Higher-order functions (mapcar, remove-if, reduce) are
-;;;;   used throughout to demonstrate functional composition.
 ;;;; ================================================================
 
 (defpackage :medical-expert
@@ -28,19 +20,17 @@
 
 
 ;;; ================================================================
-;;; SECTION 1 — STRING UTILITIES (pure functions)
+;;; SECTION 1 — STRING UTILITIES
 ;;; ================================================================
 
 (defun string-downcase-trim (str)
-  "Lowercase and strip leading/trailing whitespace from STR.
-   Pure function — no side effects."
+  "Lowercase and strip leading/trailing whitespace from STR."
   (string-trim '(#\Space #\Tab #\Newline #\Return)
                (string-downcase str)))
 
 
 (defun split-by-char (str char)
-  "Split STR into a list of substrings on CHAR.
-   Pure recursive function — demonstrates functional decomposition."
+  "Split STR into a list of substrings on CHAR."
   (let ((pos (position char str)))
     (if pos
         (cons (subseq str 0 pos)
@@ -83,8 +73,7 @@
 
 (defun normalise-input (raw-text)
   "Full normalisation pipeline for raw patient input.
-   Applies: lowercase -> trim -> remove punctuation -> collapse spaces.
-   Pure function — the entry point for all text before matching."
+   Applies: lowercase -> trim -> remove punctuation -> collapse spaces."
   (let* ((lower    (string-downcase-trim raw-text))
          (no-punct (remove-punctuation lower))
          (trimmed  (string-downcase-trim no-punct)))
@@ -104,9 +93,7 @@
 
 (defun word-boundary-match-p (text word)
   "Return T if WORD appears as a whole word in TEXT.
-   Uses space-padding trick to enforce word boundaries —
-   prevents 'no' matching inside 'nose' or 'runny nose'.
-   Pure function — no side effects."
+   Uses space-padding trick to enforce word boundaries."
   (let ((padded-text (concatenate 'string " " text " "))
         (padded-word (concatenate 'string " " word " ")))
     (not (null (search padded-word padded-text :test #'string=)))))
@@ -114,9 +101,7 @@
 
 (defun detect-negation (text)
   "Return T if TEXT contains a negation word as a WHOLE WORD.
-   Uses word-boundary-match-p to prevent false matches —
-   e.g. 'no' should not match inside 'runny nose'.
-   Pure function — demonstrates higher-order function SOME."
+   Uses word-boundary-match-p to prevent false matches."
   (some #'(lambda (neg)
               (word-boundary-match-p text neg))
         *negation-words*))
@@ -138,7 +123,7 @@
 (defun find-all-matches (text symptom-map)
   "Apply match-symptom-phrase across all entries in SYMPTOM-MAP.
    Uses MAPCAR (higher-order) then filters NILs.
-   Returns a list of matched Prolog atoms — may contain duplicates."
+   Returns a list of matched Prolog atoms may contain duplicates."
   (remove-if #'null
              (mapcar #'(lambda (pair)
                          (match-symptom-phrase text pair))
@@ -147,8 +132,7 @@
 
 (defun deduplicate (lst)
   "Remove duplicate items from LST using REDUCE.
-   Uses string= for string comparison, eql for symbols.
-   Pure functional deduplication — no mutation."
+   Uses string= for string comparison, eql for symbols."
   (reduce #'(lambda (acc item)
               (if (member item acc :test #'equal)
                   acc
@@ -174,20 +158,18 @@
 
 
 (defparameter *subsumption-map*
-  '(;; If specific fever matched, drop generic fever
+  '(
     (fever . ("low_grade_fever" "cyclical_fever"))
-    ;; If specific rash matched, drop generic skin_rash
-    ("skin_rash" . ("itchy_rash" "vesicular_rash" "rose_spot_rash")))
+    ("skin_rash" . ("itchy_rash" "vesicular_rash" "rose_spot_rash"))
+    (difficulty_breathing . ("shortness_of_breath")))
   "Alist of (generic . (specific...)).
-   If ANY specific atom is present in the matched list, the generic is removed.
-   Cough is handled at the mapper level -- generic cough phrases are written
-   to not overlap with compound cough phrases.")
+  If ANY specific atom is present in the matched list, the generic is removed.
+  Cough is handled at the mapper level -- generic cough phrases are written
+  to not overlap with compound cough phrases.")
 
 
 (defun subsume-generic-symptoms (symptom-list)
-  "Remove generic symptom atoms when a more specific variant is present.
-   E.g. if chronic_cough is matched, cough is redundant and removed.
-   Pure function — uses REMOVE-IF with higher-order predicate."
+  "Remove generic symptom atoms when a more specific variant is present."
   (remove-if
     #'(lambda (atom)
         (let ((specifics (cdr (assoc atom *subsumption-map* :test #'equal))))
@@ -209,10 +191,7 @@
      (:symptoms  (fever cough fatigue ...)
       :negated   T/NIL
       :raw       original text
-      :normalised cleaned text)
-
-   This is a pure function — same input always gives same output.
-   The Python bridge reads the :symptoms and :negated keys."
+      :normalised cleaned text)"
   (let* ((normalised (normalise-input raw-text))
          (negated    (detect-negation normalised))
          (cleaned    (remove-stop-words normalised))
@@ -257,8 +236,7 @@
 ;;; ================================================================
 
 (defun count-matching-symptoms (symptom-list candidate-symptoms)
-  "Count how many symptoms from SYMPTOM-LIST appear in CANDIDATE-SYMPTOMS.
-   Pure function — used for pre-filtering before Prolog inference."
+  "Count how many symptoms from SYMPTOM-LIST appear in CANDIDATE-SYMPTOMS."
   (length
     (remove-if-not
       #'(lambda (s) (member s candidate-symptoms))
@@ -267,8 +245,7 @@
 
 (defun symptom-coverage-score (input-symptoms disease-symptoms)
   "Calculate what fraction of INPUT-SYMPTOMS appear in DISEASE-SYMPTOMS.
-   Returns a float between 0.0 and 1.0.
-   Pure arithmetic function — no side effects."
+   Returns a float between 0.0 and 1.0."
   (if (null input-symptoms)
       0.0
       (/ (float (count-matching-symptoms input-symptoms disease-symptoms))
@@ -321,8 +298,7 @@
 
 (defun med-run-processor ()
   "Entry point when called as a subprocess by lisp_connector.py.
-   Reads input text from command-line argument (safer than stdin
-   in non-interactive SBCL). Python passes text as the last arg."
+   Reads input text from command-line argument."
   (let* ((args      sb-ext:*posix-argv*)
          (raw-input (if (> (length args) 1)
                         (car (last args))

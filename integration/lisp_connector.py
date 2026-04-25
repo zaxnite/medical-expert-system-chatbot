@@ -3,17 +3,6 @@
 # Python-to-Lisp bridge.
 # Calls the Lisp input processor via SBCL subprocess,
 # parses the result, and returns clean Python dicts to the consultation layer.
-#
-# LISP ONLY - no Python fallback.
-#
-# Windows SBCL quirks this file works around:
-#   1. --script produces no stdout on Windows (pipe buffering issue)
-#      Fix: use --eval instead of --script
-#   2. --eval only accepts ONE expression per flag
-#      Fix: one --eval flag per top-level form
-#   3. Patient text cannot be passed via *posix-argv* reliably
-#      Fix: write text to a temp file, read it from Lisp with
-#           (with-open-file ...) to avoid all escaping/argv issues
 
 import os
 import subprocess
@@ -104,17 +93,6 @@ class LispConnector:
     def _call_sbcl(self, raw_text: str) -> dict:
         """
         Invoke SBCL using one --eval flag per expression.
-
-        Why not --script?
-            On Windows, --script mode does not flush stdout to the captured pipe.
-            subprocess.run sees empty stdout even when Lisp calls (write-line ...) and rc=0.
-
-        Why not pass text via *posix-argv*?
-            On Windows, extra args after the script/eval flags are not reliably
-            available in *posix-argv*.
-
-        Solution: write the patient text to a temp file, then read it inside Lisp
-        with (with-open-file ...). This avoids all escaping and argv issues entirely.
         """
         txt_path = None
         try:
