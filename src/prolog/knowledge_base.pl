@@ -21,12 +21,13 @@
 
 
 % ================================================================
-% GROUP A - RESPIRATORY (3 diseases)
+% GROUP A - RESPIRATORY (4 diseases)
 % ================================================================
 
 disease_group(influenza,    respiratory).
 disease_group(common_cold,  respiratory).
 disease_group(pneumonia,    respiratory).
+disease_group(tuberculosis, respiratory).
 
 % --- Influenza ---
 symptom_of(influenza, fever).
@@ -55,14 +56,28 @@ symptom_of(pneumonia, productive_cough).
 test_required(pneumonia, chest_xray).
 test_required(pneumonia, blood_culture).
 
+% --- Tuberculosis ---
+symptom_of(tuberculosis, chronic_cough).
+symptom_of(tuberculosis, productive_cough).
+symptom_of(tuberculosis, night_sweats).
+symptom_of(tuberculosis, weight_loss).
+symptom_of(tuberculosis, fatigue).
+symptom_of(tuberculosis, low_grade_fever).
+symptom_of(tuberculosis, chest_pain).
+symptom_of(tuberculosis, haemoptysis).
+test_required(tuberculosis, sputum_culture).
+test_required(tuberculosis, chest_xray).
+test_required(tuberculosis, tuberculin_test).
+
 
 % ================================================================
-% GROUP B - VIRAL / INFECTIOUS (3 diseases)
+% GROUP B - VIRAL / INFECTIOUS (4 diseases)
 % ================================================================
 
 disease_group(covid19,       viral_infectious).
 disease_group(dengue_fever,  viral_infectious).
 disease_group(malaria,       viral_infectious).
+disease_group(chickenpox,    viral_infectious).
 
 % --- COVID-19 ---
 symptom_of(covid19, fever).
@@ -95,13 +110,26 @@ symptom_of(malaria, sweating_episodes).
 test_required(malaria, blood_smear).
 test_required(malaria, rdt_malaria_test).
 
+% --- Chickenpox ---
+symptom_of(chickenpox, fever).
+symptom_of(chickenpox, fatigue).
+symptom_of(chickenpox, itchy_rash).
+symptom_of(chickenpox, vesicular_rash).
+symptom_of(chickenpox, loss_of_appetite).
+symptom_of(chickenpox, headache).
+symptom_of(chickenpox, chills).
+test_required(chickenpox, tzanck_smear).
+test_required(chickenpox, varicella_pcr).
+
 
 % ================================================================
-% GROUP C - GASTROINTESTINAL (2 diseases)
+% GROUP C - GASTROINTESTINAL (4 diseases)
 % ================================================================
 
 disease_group(gastroenteritis, gastrointestinal).
 disease_group(appendicitis,    gastrointestinal).
+disease_group(peptic_ulcer,    gastrointestinal).
+disease_group(irritable_bowel_syndrome, gastrointestinal).
 
 % --- Gastroenteritis ---
 symptom_of(gastroenteritis, nausea).
@@ -120,14 +148,34 @@ symptom_of(appendicitis, rebound_tenderness).
 test_required(appendicitis, ultrasound).
 test_required(appendicitis, elevated_wbc).
 
+% --- Peptic Ulcer Disease ---
+symptom_of(peptic_ulcer, burning_epigastric_pain).
+symptom_of(peptic_ulcer, nausea).
+symptom_of(peptic_ulcer, bloating).
+symptom_of(peptic_ulcer, loss_of_appetite).
+symptom_of(peptic_ulcer, vomiting).
+test_required(peptic_ulcer, endoscopy).
+test_required(peptic_ulcer, h_pylori_breath_test).
+
+% --- Irritable Bowel Syndrome ---
+symptom_of(irritable_bowel_syndrome, cramping).
+symptom_of(irritable_bowel_syndrome, abdominal_pain).
+symptom_of(irritable_bowel_syndrome, bloating).
+symptom_of(irritable_bowel_syndrome, diarrhea).
+symptom_of(irritable_bowel_syndrome, constipation).
+test_required(irritable_bowel_syndrome, colonoscopy).
+test_required(irritable_bowel_syndrome, stool_analysis).
+
 
 % ================================================================
-% GROUP D - NEUROLOGICAL / ENT (3 diseases)
+% GROUP D - NEUROLOGICAL / ENT (4 diseases)
 % ================================================================
 
 disease_group(meningitis,   neurological_ent).
 disease_group(migraine,     neurological_ent).
+disease_group(tension_headache, neurological_ent).
 disease_group(strep_throat, neurological_ent).
+
 
 % --- Meningitis ---
 symptom_of(meningitis, fever).
@@ -146,6 +194,14 @@ symptom_of(migraine, pulsating_pain).
 symptom_of(migraine, visual_aura).
 symptom_of(migraine, one_sided_pain).
 
+% --- Tension Headache ---
+symptom_of(tension_headache, headache).
+symptom_of(tension_headache, fatigue).
+symptom_of(tension_headache, dizziness).
+symptom_of(tension_headache, light_sensitivity).
+symptom_of(tension_headache, neck_stiffness).
+% No tests - tension headache is a clinical diagnosis
+
 % --- Strep throat ---
 symptom_of(strep_throat, fever).
 symptom_of(strep_throat, sore_throat).
@@ -155,6 +211,8 @@ symptom_of(strep_throat, headache).
 symptom_of(strep_throat, sudden_onset).
 test_required(strep_throat, rapid_strep_test).
 test_required(strep_throat, throat_culture).
+
+
 
 
 % ================================================================
@@ -206,78 +264,6 @@ test_required(typhoid_fever, widal_test).
 test_required(typhoid_fever, blood_culture).
 
 
-
-
-% ================================================================
-% GROUP A - RESPIRATORY (continued)
-% ================================================================
-
-% --- Tuberculosis ---
-symptom_of(tuberculosis, chronic_cough).
-symptom_of(tuberculosis, productive_cough).
-symptom_of(tuberculosis, night_sweats).
-symptom_of(tuberculosis, weight_loss).
-symptom_of(tuberculosis, fatigue).
-symptom_of(tuberculosis, low_grade_fever).
-symptom_of(tuberculosis, chest_pain).
-symptom_of(tuberculosis, haemoptysis).
-disease_group(tuberculosis, respiratory).
-test_required(tuberculosis, sputum_culture).
-test_required(tuberculosis, chest_xray).
-test_required(tuberculosis, tuberculin_test).
-
-% ================================================================
-% GROUP B - VIRAL / INFECTIOUS (continued)
-% ================================================================
-
-% --- Chickenpox ---
-symptom_of(chickenpox, fever).
-symptom_of(chickenpox, fatigue).
-symptom_of(chickenpox, itchy_rash).
-symptom_of(chickenpox, vesicular_rash).
-symptom_of(chickenpox, loss_of_appetite).
-symptom_of(chickenpox, headache).
-symptom_of(chickenpox, chills).
-disease_group(chickenpox, viral_infectious).
-test_required(chickenpox, tzanck_smear).
-test_required(chickenpox, varicella_pcr).
-
-% ================================================================
-% GROUP C - GASTROINTESTINAL (continued)
-% ================================================================
-
-% --- Peptic Ulcer Disease ---
-symptom_of(peptic_ulcer, burning_epigastric_pain).
-symptom_of(peptic_ulcer, nausea).
-symptom_of(peptic_ulcer, bloating).
-symptom_of(peptic_ulcer, loss_of_appetite).
-symptom_of(peptic_ulcer, vomiting).
-disease_group(peptic_ulcer, gastrointestinal).
-test_required(peptic_ulcer, endoscopy).
-test_required(peptic_ulcer, h_pylori_breath_test).
-
-% --- Irritable Bowel Syndrome ---
-symptom_of(irritable_bowel_syndrome, cramping).
-symptom_of(irritable_bowel_syndrome, abdominal_pain).
-symptom_of(irritable_bowel_syndrome, bloating).
-symptom_of(irritable_bowel_syndrome, diarrhea).
-symptom_of(irritable_bowel_syndrome, constipation).
-disease_group(irritable_bowel_syndrome, gastrointestinal).
-test_required(irritable_bowel_syndrome, colonoscopy).
-test_required(irritable_bowel_syndrome, stool_analysis).
-
-% ================================================================
-% GROUP D - NEUROLOGICAL / ENT (continued)
-% ================================================================
-
-% --- Tension Headache ---
-symptom_of(tension_headache, headache).
-symptom_of(tension_headache, fatigue).
-symptom_of(tension_headache, dizziness).
-symptom_of(tension_headache, light_sensitivity).
-symptom_of(tension_headache, neck_stiffness).
-disease_group(tension_headache, neurological_ent).
-% No tests - tension headache is a clinical diagnosis
 
 
 % ================================================================

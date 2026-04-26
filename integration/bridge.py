@@ -9,7 +9,6 @@ from pyswip import Prolog, Functor, Variable, Atom
 import re
 
 # Increase stack before the engine starts.
-# Default stack is too small for 20 diseases and causes crashes on some systems.
 os.environ.setdefault("SWI_HOME_DIR", "")
 os.environ["SWIPL_STACK_LIMIT"] = "256m"
 
@@ -124,33 +123,38 @@ class PrologBridge:
             self.deny_symptom(symptom)
         list(self._prolog.query(f"assertz(diagnosis_rules:asked({symptom}))"))
 
-        # Early exit: if only 1 candidate remains with confidence >= 60%
-        # and at least 3 matching symptoms, stop asking to avoid unnecessary questions.
-        candidates = list(self._prolog.query("candidate(D)"))
-        if len(candidates) == 1:
-            sole = str(candidates[0]["D"])
-            conf_res = list(self._prolog.query(f"confidence({sole}, Pct)"))
-            # Count how many confirmed symptoms belong to this disease
-            matched = list(self._prolog.query(
-                f"symptom_of({sole}, S), symptom(S)"
-            ))
-            if (conf_res and float(conf_res[0]["Pct"]) >= 65.0
-                    and len(matched) >= 3):
-                return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
+        # Check diagnosis() first — if it fires, stop immediately
+        done = list(self._prolog.query("consultation_complete(diagnosed)"))
+        if done:
+            return self._build_result()
 
-        # Check if consultation is done by normal criteria
+        # Get next question before checking other termination conditions.
+        nq = self.get_next_question()
+
+        if nq is not None:
+            # Early exit: if only 1 candidate remains with confidence >= 65%
+            # and at least 3 confirmed symptoms, no need to ask further.
+            candidates = list(self._prolog.query("candidate(D)"))
+            if len(candidates) == 1:
+                sole = str(candidates[0]["D"])
+                conf_res = list(self._prolog.query(f"confidence({sole}, Pct)"))
+                matched = list(self._prolog.query(
+                    f"symptom_of({sole}, S), symptom(S)"
+                ))
+                if (conf_res and float(conf_res[0]["Pct"]) >= 65.0
+                        and len(matched) >= 3):
+                    return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
+
+            # More questions available — ask the next one
+            candidates = list(self._prolog.query("candidate(D)"))
+            return {"action": "ask", "candidate_count": len(candidates), **nq}
+
+        # No more questions left — check remaining termination conditions
         done = list(self._prolog.query("consultation_complete(Reason)"))
         if done:
             return self._build_result()
 
-        # Get next question
-        nq = self.get_next_question()
-        if nq is None:
-            return self._build_result()
-
-        # Attach live candidate count to the response
-        candidates = list(self._prolog.query("candidate(D)"))
-        return {"action": "ask", "candidate_count": len(candidates), **nq}
+        return self._build_result()
 
     def get_first_question(self) -> dict:
         # Get first question without processing any answer

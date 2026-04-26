@@ -621,11 +621,18 @@ hard_rule_violated(Disease) :-
     hard_rule(Disease, not(S)),
     symptom(S).
 
+% optional_symptom/1 — symptoms that are clinically variable and should not
+% cause hard elimination when denied, even if they are rare globally.
+% These are late-stage or minority-presentation symptoms.
+optional_symptom(haemoptysis).   % present in ~50% of TB cases only
+optional_symptom(rose_spot_rash). % present in ~30% of typhoid cases
+
 denied_required_symptom(Disease) :-
     denied(S),
     symptom_of(Disease, S),
+    \+ optional_symptom(S),
     symptom_rarity(S, Count),
-    Count =< 4.
+    Count =< 2.
 
 % denied_hallmark_symptom(+Disease)
 % Eliminates a disease when the patient denies its defining hallmark.
@@ -777,20 +784,7 @@ symptom_match_score(Disease, Score) :-
 
 % total_weight(+Disease, -Total)
 % Weighted sum of IDF weights for Disease symptoms the patient has NOT denied.
-%
-% WHY denied symptoms are excluded from the denominator:
-%   A denied symptom cannot contribute to the numerator, so keeping it in
-%   the denominator permanently caps the score below 100%.
-%   Example: TB (8 symptoms). Denying haemoptysis (weight 3.00) with the
-%   old formula capped TB at 84.5% even if every other symptom was confirmed.
-%   In the reported session (4 specific TB symptoms confirmed, haemoptysis
-%   denied), TB scored 58.5% and the system returned Inconclusive.
-%   Excluding denied symptoms is medically sound: haemoptysis is a late-stage
-%   symptom absent in many real TB cases. Not having it now should not
-%   permanently penalise the diagnosis.
-%   Safety: a denied HALLMARK symptom (e.g. chronic_cough for TB) already
-%   eliminates the disease via denied_hallmark_symptom before confidence
-%   is ever calculated, so this cannot cause false positives.
+
 total_weight(Disease, Total) :-
     findall(W,
         ( symptom_of(Disease, S),
