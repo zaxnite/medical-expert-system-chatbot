@@ -387,11 +387,7 @@
       :denied     (fever ...)           <- symptoms patient does NOT have
       :negated    T/NIL                 <- global flag (kept for compatibility)
       :raw        original text
-      :normalised cleaned text)
-
-   Uses per-symptom clause-level negation so a sentence like
-   'I don't have a fever but I am tired' correctly puts fever in
-   :denied and fatigue in :confirmed."
+      :normalised cleaned text)"
   (let* ((normalised  (normalise-input raw-text))
          (cleaned     (remove-stop-words normalised))
          ;; tagged = list of (atom . negated-p)

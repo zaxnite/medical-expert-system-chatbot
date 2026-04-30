@@ -277,6 +277,7 @@
     ("bad headache"                 . headache)
     ("severe headache"              . headache)
     ("head is killing me"           . headache)
+    ("cephalodynia"                 . headache)
 
     ;; --- pulsating pain — Migraine ---
     ("pulsating pain"               . "pulsating_pain")
@@ -342,6 +343,7 @@
     ("muddled thinking"             . confusion)
     ("disorientated"                . confusion)
     ("dont know where i am"         . confusion)
+    ("confabulation"                . confusion)
 
     ;; --- neck stiffness — Meningitis / Tension Headache ---
     ("neck stiffness"               . "neck_stiffness")
@@ -418,6 +420,7 @@
     ("sneezing a lot"               . sneezing)
     ("frequent sneezing"            . sneezing)
     ("fit of sneezing"              . sneezing)
+    ("sternutation"                 . sneezing)
 
     ;; --- pain behind eyes — Dengue Fever ---
     ("pain behind eyes"             . "pain_behind_eyes")
@@ -525,6 +528,7 @@
     ("bowel upset"                  . diarrhea)
     ("runny stomach"                . diarrhea)
     ("upset stomach with loose poo" . diarrhea)
+    ("intestinal looseness"         . diarrhea)
 
     ;; --- cramping — Gastroenteritis / Irritable Bowel Syndrome ---
     ("cramping"                     . cramping)
@@ -537,6 +541,7 @@
     ("gripping pain in stomach"     . cramping)
     ("stomach spasms"               . cramping)
     ("spasms in gut"                . cramping)
+    ("colic"                        . cramping)
 
     ;; --- right lower quad pain — Appendicitis ---
     ("right lower abdominal pain"   . "right_lower_quad_pain")
@@ -574,6 +579,7 @@
     ("hard to pass stool"           . constipation)
     ("straining to go toilet"       . constipation)
     ("irregular bowels"             . constipation)
+    ("dyschezia"                    . constipation)
 
     ;; --- bloating — Peptic Ulcer / Irritable Bowel Syndrome ---
     ("bloating"                     . "bloating")
@@ -838,6 +844,7 @@
     ("off balance"                  . dizziness)
     ("woozy"                        . dizziness)
     ("spinning feeling"             . dizziness)
+    ("vertiginousness"              . dizziness)
 
     ;; --- cold hands and feet — Anemia ---
     ("cold hands and feet"          . "cold_hands_and_feet")
