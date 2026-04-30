@@ -24,10 +24,21 @@ def _find_sbcl() -> str | None:
 
 def _parse_lisp_output(raw_output: str) -> dict:
     """
-    Parse SYMPTOMS:fever,cough|NEGATED:NIL produced by
-    format-result-for-python in input_processor.lisp.
+    Parse the output produced by format-result-for-python in input_processor.lisp.
+
+    New format (per-symptom negation):
+        CONFIRMED:fatigue,cough|DENIED:fever|NEGATED:T
+
+    Old format (global negation flag, kept for backward compat):
+        SYMPTOMS:fever,cough|NEGATED:NIL
+
+    Returns a dict with keys:
+        confirmed  - list of symptom strings the patient HAS
+        denied     - list of symptom strings the patient does NOT have
+        symptoms   - alias for confirmed (backward compat)
+        negated    - bool, True if any negation was found
     """
-    result = {"symptoms": [], "negated": False}
+    result = {"confirmed": [], "denied": [], "symptoms": [], "negated": False}
     if not raw_output or not raw_output.strip():
         return result
     try:
@@ -36,12 +47,20 @@ def _parse_lisp_output(raw_output: str) -> dict:
                 continue
             key, value = part.split(":", 1)
             key = key.strip().upper()
-            if key == "SYMPTOMS" and value.strip():
-                result["symptoms"] = [
-                    s.strip() for s in value.split(",") if s.strip()
-                ]
+            value = value.strip()
+
+            if key == "CONFIRMED" and value:
+                result["confirmed"] = [s.strip() for s in value.split(",") if s.strip()]
+            elif key == "DENIED" and value:
+                result["denied"] = [s.strip() for s in value.split(",") if s.strip()]
+            elif key == "SYMPTOMS" and value:
+                # old format fallback
+                result["confirmed"] = [s.strip() for s in value.split(",") if s.strip()]
             elif key == "NEGATED":
-                result["negated"] = value.strip().upper() == "T"
+                result["negated"] = value.upper() == "T"
+
+        # keep backward-compat alias
+        result["symptoms"] = result["confirmed"]
     except Exception as e:
         result["error"] = str(e)
     return result
@@ -165,7 +184,7 @@ class LispConnector:
     def _extract_result_line(self, stdout: str) -> str:
         for line in stdout.splitlines():
             s = line.strip()
-            if s.startswith("SYMPTOMS:"):
+            if s.startswith("CONFIRMED:") or s.startswith("SYMPTOMS:"):
                 return s
         return ""
 
@@ -174,9 +193,16 @@ class LispConnector:
     # ----------------------------------------------------------------
 
     def extract_for_session(self, raw_text: str) -> dict:
-        result   = self.process_input(raw_text)
-        symptoms = result.get("symptoms", [])
-        negated  = result.get("negated",  False)
-        if negated:
-            return {"to_assert": [], "to_deny": symptoms}
-        return {"to_assert": symptoms, "to_deny": []}
+        """
+        Process raw patient text and return symptoms split into two lists:
+            to_assert  - symptoms the patient confirmed (should be asserted)
+            to_deny    - symptoms the patient denied    (should be denied)
+
+        Uses the per-symptom negation from the new CONFIRMED/DENIED format,
+        so 'I don't have a fever but I am tired' correctly asserts fatigue
+        and denies fever instead of denying both.
+        """
+        result    = self.process_input(raw_text)
+        confirmed = result.get("confirmed", [])
+        denied    = result.get("denied",    [])
+        return {"to_assert": confirmed, "to_deny": denied}

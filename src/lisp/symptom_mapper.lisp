@@ -505,7 +505,8 @@
     ("stomach ache"                 . "abdominal_pain")
     ("abdo pain"                    . "abdominal_pain")
     ("my stomach hurts"             . "abdominal_pain")
-    ("pain in my stomach"           . "abdominal_pain")
+    ("pain in stomach"           . "abdominal_pain")
+    ("pain in abdomen"           . "abdominal_pain")
     ("abdomen pain"                 . "abdominal_pain")
     ("stomachache"                  . "abdominal_pain")
     ("stomach is hurting"           . "abdominal_pain")
@@ -856,7 +857,7 @@
 ;;; NEGATION WORDS
 ;;; ----------------------------------------------------------------
 (defparameter *negation-words*
-  '("no" "not" "dont" "don't" "without" "never"
+  '("no" "not""dont" "don't" "without" "never"
     "no sign of" "no signs of" "absent"
     "haven't" "havent" "didnt" "didn't"
     "none" "lack" "lacking" "free of"

@@ -107,6 +107,153 @@
         *negation-words*))
 
 
+;;; ----------------------------------------------------------------
+;;; NEGATION WINDOW SCOPING — per-symptom negation
+;;; ----------------------------------------------------------------
+;;;
+;;; Core idea:
+;;;   A negation word (e.g. "not", "dont") opens a NEGATION WINDOW.
+;;;   The window closes when a SCOPE BREAKER is encountered:
+;;;     - a coordinating conjunction that resets scope: "and", "also",
+;;;       "plus", "as well", "but", "however", "although", etc.
+;;;   Any symptom phrase whose position in the text falls INSIDE a
+;;;   negation window is considered denied; all others are confirmed.
+;;;
+;;;   Examples:
+;;;     "I am not hungry and have a fever"
+;;;       negation window: [pos("not") .. pos("and")]
+;;;       "hungry"  -> inside window  -> denied
+;;;       "fever"   -> after "and"    -> confirmed   ✓
+;;;
+;;;     "I dont have a fever but I am tired"
+;;;       negation window: [pos("dont") .. pos("but")]
+;;;       "fever"   -> inside window  -> denied      ✓
+;;;       "tired"   -> after "but"    -> confirmed   ✓
+;;;
+;;;     "I have a fever and no cough"
+;;;       no negation before "fever" -> confirmed
+;;;       negation window: [pos("no") .. end]
+;;;       "cough"   -> inside window  -> denied      ✓
+
+(defparameter *scope-breakers*
+  '("and" "also" "plus" "as well" "but" "however" "although"
+    "though" "yet" "while" "whereas" "except" "apart from"
+    "other than" "additionally" "furthermore" "moreover")
+  "Words/phrases that close a negation window.
+   After any of these, negation scope resets to positive.")
+
+
+(defun find-first-occurrence (text phrases)
+  "Return the position of the first occurrence of any phrase from PHRASES
+   in TEXT (as a padded whole-word search), or NIL if none found.
+   Returns the position in the original TEXT string."
+  (let ((padded-text (concatenate 'string " " text " "))
+        (best nil))
+    (dolist (phrase phrases best)
+      (let* ((padded-phrase (concatenate 'string " " phrase " "))
+             (pos (search padded-phrase padded-text :test #'string=)))
+        (when pos
+          ;; adjust for the leading space we added
+          (let ((real-pos (1- pos)))
+            (when (or (null best) (< real-pos best))
+              (setf best real-pos))))))))
+
+
+
+(defun position-in-text (text phrase)
+  "Return the character position of PHRASE in TEXT, or NIL if not present."
+  (search phrase text :test #'string=))
+
+
+(defun in-any-window-p (pos windows)
+  "Return T if POS falls inside any of the (start . end) WINDOWS."
+  (some #'(lambda (w)
+            (and (>= pos (car w))
+                 (<  pos (cdr w))))
+        windows))
+
+
+(defun matched-phrase-spans (text)
+  "Return a list of (start . end) spans for every phrase in *symptom-map*
+   that appears in TEXT.  Used to mask out negation words that are part of
+   a matched phrase rather than free-standing negation triggers.
+
+   Example: in 'i am not hungry and have a fever', the phrase 'not hungry'
+   spans positions 5-15.  The word 'not' at position 5 is inside this span
+   and must NOT open a negation window."
+  (let ((spans '()))
+    (dolist (pair *symptom-map* spans)
+      (let* ((phrase (car pair))
+             (pos    (search phrase text :test #'string=)))
+        (when pos
+          (push (cons pos (+ pos (length phrase))) spans))))))
+
+
+(defun pos-inside-any-span-p (pos spans)
+  "Return T if POS falls inside any of the (start . end) SPANS."
+  (some #'(lambda (s)
+            (and (>= pos (car s))
+                 (<  pos (cdr s))))
+        spans))
+
+
+(defun negation-windows-masked (text matched-spans)
+  "Like negation-windows but ignores negation words whose position in TEXT
+   falls inside one of MATCHED-SPANS.
+   This prevents phrases like 'not hungry' or 'no appetite' from opening
+   windows — the negation in those phrases is part of the symptom mapping,
+   not a free-standing patient denial."
+  (let ((padded-text (concatenate 'string " " text " "))
+        (windows '()))
+    (dolist (neg *negation-words*)
+      (let* ((padded-neg (concatenate 'string " " neg " "))
+             (neg-pos    (search padded-neg padded-text :test #'string=)))
+        (when neg-pos
+          (let ((real-pos (1- neg-pos)))   ; position in original text
+            ;; only open a window if this negation word is NOT inside
+            ;; a span already claimed by a matched symptom phrase
+            (unless (pos-inside-any-span-p real-pos matched-spans)
+              (let* ((search-from (+ neg-pos (length padded-neg) -1))
+                     (rest-text   (if (< search-from (length text))
+                                      (subseq text search-from)
+                                      ""))
+                     (breaker-offset (find-first-occurrence rest-text
+                                                            *scope-breakers*))
+                     (win-end (if breaker-offset
+                                  (+ search-from breaker-offset)
+                                  (length text))))
+                (push (cons real-pos win-end) windows)))))))
+    windows))
+
+
+(defun symptom-negated-in-context-p (symptom-phrase full-text)
+  "Return T if SYMPTOM-PHRASE should be treated as a denied symptom.
+
+   The mapper already encodes meaning: ('not hungry' . loss_of_appetite)
+   means the patient HAS loss_of_appetite.  So phrases whose own negation
+   words are part of the matched span must never be denied by the window
+   system.
+
+   Algorithm:
+   1. Collect all matched phrase spans in full-text.
+   2. Build negation windows, masking out negation words inside those spans.
+   3. Find the position of symptom-phrase in full-text.
+   4. Return T if that position falls inside a (masked) negation window.
+   5. Fallback: if phrase not found in full-text, use global detect-negation
+      only if the full text has no matched spans (completely free-form text)."
+  (let* ((spans   (matched-phrase-spans full-text))
+         (windows (negation-windows-masked full-text spans))
+         (pos     (position-in-text full-text symptom-phrase)))
+    (cond
+      ;; phrase found — check against masked windows only
+      (pos  (in-any-window-p pos windows))
+      ;; phrase not found (stop-word removal altered text) —
+      ;; fallback to global negation only when no spans were matched
+      ;; (i.e. we are in completely free-form unmatched text territory)
+      (t    (and (null spans)
+                 (detect-negation full-text))))))
+
+
 ;;; ================================================================
 ;;; SECTION 3 — SYMPTOM MATCHING
 ;;; ================================================================
@@ -120,6 +267,16 @@
       atom)))
 
 
+(defun match-symptom-phrase-tagged (normalised-text full-text phrase-atom-pair)
+  "Return a tagged pair (atom . negated-p) if PHRASE appears in NORMALISED-TEXT.
+   FULL-TEXT is used for per-clause negation lookup (before stop-word removal).
+   Returns NIL if no match."
+  (let ((phrase (car phrase-atom-pair))
+        (atom   (cdr phrase-atom-pair)))
+    (when (string-contains-p normalised-text phrase)
+      (cons atom (symptom-negated-in-context-p phrase full-text)))))
+
+
 (defun find-all-matches (text symptom-map)
   "Apply match-symptom-phrase across all entries in SYMPTOM-MAP.
    Uses MAPCAR (higher-order) then filters NILs.
@@ -127,6 +284,18 @@
   (remove-if #'null
              (mapcar #'(lambda (pair)
                          (match-symptom-phrase text pair))
+                     symptom-map)))
+
+
+(defun find-all-matches-tagged (normalised-text full-text symptom-map)
+  "Like find-all-matches but returns (atom . negated-p) pairs.
+   NORMALISED-TEXT is the cleaned text used for phrase matching.
+   FULL-TEXT is the normalised-but-NOT-stop-word-stripped text,
+   used for clause-level negation detection."
+  (remove-if #'null
+             (mapcar #'(lambda (pair)
+                         (match-symptom-phrase-tagged
+                           normalised-text full-text pair))
                      symptom-map)))
 
 
@@ -138,6 +307,17 @@
                   acc
                   (append acc (list item))))
           lst
+          :initial-value '()))
+
+
+(defun deduplicate-tagged (tagged-list)
+  "Deduplicate (atom . negated-p) pairs by atom.
+   First occurrence wins (preserves negation status of first match)."
+  (reduce #'(lambda (acc pair)
+              (if (assoc (car pair) acc :test #'equal)
+                  acc
+                  (append acc (list pair))))
+          tagged-list
           :initial-value '()))
 
 
@@ -155,6 +335,21 @@
   (subsume-generic-symptoms
     (deduplicate
       (find-all-matches normalised-text *symptom-map*))))
+
+
+(defun extract-symptoms-tagged (normalised-text full-text)
+  "Like extract-symptoms but returns (atom . negated-p) pairs.
+   Allows each symptom to carry its own negation flag.
+   FULL-TEXT is the pre-stop-word-removal text for clause negation."
+  (let* ((raw-tagged  (find-all-matches-tagged normalised-text full-text
+                                               *symptom-map*))
+         (deduped     (deduplicate-tagged raw-tagged))
+         ;; subsumption: extract just atoms, run subsumption, then filter pairs
+         (atoms-only  (mapcar #'car deduped))
+         (kept-atoms  (subsume-generic-symptoms atoms-only)))
+    (remove-if-not #'(lambda (pair)
+                       (member (car pair) kept-atoms :test #'equal))
+                   deduped)))
 
 
 (defparameter *subsumption-map*
@@ -188,17 +383,30 @@
   "TOP-LEVEL FUNCTION — called by Python via lisp_connector.py.
    Takes raw patient text, returns a structured result plist:
 
-     (:symptoms  (fever cough fatigue ...)
-      :negated   T/NIL
-      :raw       original text
-      :normalised cleaned text)"
-  (let* ((normalised (normalise-input raw-text))
-         (negated    (detect-negation normalised))
-         (cleaned    (remove-stop-words normalised))
-         (symptoms   (extract-symptoms cleaned)))
+     (:confirmed  (fatigue cough ...)   <- symptoms patient HAS
+      :denied     (fever ...)           <- symptoms patient does NOT have
+      :negated    T/NIL                 <- global flag (kept for compatibility)
+      :raw        original text
+      :normalised cleaned text)
+
+   Uses per-symptom clause-level negation so a sentence like
+   'I don't have a fever but I am tired' correctly puts fever in
+   :denied and fatigue in :confirmed."
+  (let* ((normalised  (normalise-input raw-text))
+         (cleaned     (remove-stop-words normalised))
+         ;; tagged = list of (atom . negated-p)
+         (tagged      (extract-symptoms-tagged cleaned normalised))
+         (confirmed   (mapcar #'car
+                        (remove-if #'cdr tagged)))
+         (denied      (mapcar #'car
+                        (remove-if-not #'cdr tagged)))
+         ;; keep global :negated flag for any code that checks it
+         (any-negated (some #'cdr tagged)))
     (list
-      :symptoms   symptoms
-      :negated    negated
+      :confirmed  confirmed
+      :denied     denied
+      :symptoms   confirmed          ; backward-compat alias
+      :negated    (if any-negated t nil)
       :raw        raw-text
       :normalised normalised)))
 
@@ -275,21 +483,32 @@
    that lisp_connector.py can parse easily.
 
    Output format (one line):
-     SYMPTOMS:fever,cough,fatigue|NEGATED:NIL
+     CONFIRMED:fatigue,cough|DENIED:fever|NEGATED:T
 
-   The Python bridge splits on | then on : to extract values."
-  (let* ((symptoms (getf result :symptoms))
-         (negated  (getf result :negated))
-         (sym-strs (symptoms-to-string-list symptoms))
-         (sym-part (if sym-strs
-                       (reduce #'(lambda (a b)
-                                   (concatenate 'string a "," b))
-                               sym-strs)
-                       ""))
-         (neg-part (if negated "T" "NIL")))
+   CONFIRMED = symptoms the patient has.
+   DENIED    = symptoms the patient explicitly does not have.
+   NEGATED   = T if any negation was detected (kept for diagnostics).
+
+   The Python bridge splits on | then on : to extract values.
+   Old format SYMPTOMS:...|NEGATED:... is replaced by this richer format."
+  (let* ((confirmed  (getf result :confirmed))
+         (denied     (getf result :denied))
+         (negated    (getf result :negated))
+         (conf-strs  (symptoms-to-string-list confirmed))
+         (deny-strs  (symptoms-to-string-list denied))
+         (conf-part  (if conf-strs
+                         (reduce #'(lambda (a b) (concatenate 'string a "," b))
+                                 conf-strs)
+                         ""))
+         (deny-part  (if deny-strs
+                         (reduce #'(lambda (a b) (concatenate 'string a "," b))
+                                 deny-strs)
+                         ""))
+         (neg-part   (if negated "T" "NIL")))
     (concatenate 'string
-                 "SYMPTOMS:" sym-part
-                 "|NEGATED:" neg-part)))
+                 "CONFIRMED:" conf-part
+                 "|DENIED:"   deny-part
+                 "|NEGATED:"  neg-part)))
 
 
 ;;; ================================================================

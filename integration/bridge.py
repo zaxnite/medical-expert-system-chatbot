@@ -132,7 +132,7 @@ class PrologBridge:
         nq = self.get_next_question()
 
         if nq is not None:
-            # Early exit: if only 1 candidate remains with confidence >= 65%
+            # Early exit: if only 1 candidate remains with confidence >= 70%
             # and at least 3 confirmed symptoms, no need to ask further.
             candidates = list(self._prolog.query("candidate(D)"))
             if len(candidates) == 1:
@@ -141,7 +141,7 @@ class PrologBridge:
                 matched = list(self._prolog.query(
                     f"symptom_of({sole}, S), symptom(S)"
                 ))
-                if (conf_res and float(conf_res[0]["Pct"]) >= 65.0
+                if (conf_res and float(conf_res[0]["Pct"]) >= 70.0
                         and len(matched) >= 3):
                     return self._build_early_exit_result(sole, float(conf_res[0]["Pct"]))
 
@@ -183,8 +183,8 @@ class PrologBridge:
 
         confirmed, other = self._get_symptom_summary(disease)
 
-        # Floor at 65% - sole remaining candidate justifies a minimum confidence boost
-        display_confidence = max(65.0, confidence)
+        # Floor at 70% - sole remaining candidate justifies a minimum confidence boost
+        display_confidence = max(70.0, confidence)
 
         return {
             "action":             "result",

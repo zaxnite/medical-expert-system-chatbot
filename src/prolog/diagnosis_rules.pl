@@ -810,13 +810,13 @@ confidence(Disease, Pct) :-
 % ================================================================
 
 :- dynamic diagnosis_threshold/1.
-% Threshold stays at 65%.
-% IDF scores reach 100% when all symptoms are confirmed, so 65% is
+% Threshold stays at 70%.
+% IDF scores reach 100% when all symptoms are confirmed, so 70% is
 % still the right gate. Lowering to 55% caused premature diagnosis:
 % body_aches + sudden_onset + fever reached 56.4% for influenza and
 % triggered a result after only 1 yes/no question with 4 unasked symptoms.
 % The early-exit check in bridge.py and consultation.py uses the same value.
-diagnosis_threshold(65).
+diagnosis_threshold(70).
 
 diagnosis(Disease) :-
     candidate(Disease),
