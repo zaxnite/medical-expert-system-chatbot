@@ -375,6 +375,7 @@
 
     ;; --- tonsillar exudate — Strep Throat ---
     ("white patches throat"         . "tonsillar_exudate")
+    ("white patches on throat"         . "tonsillar_exudate")
     ("white spots throat"           . "tonsillar_exudate")
     ("pus on tonsils"               . "tonsillar_exudate")
     ("tonsillar exudate"            . "tonsillar_exudate")
@@ -475,6 +476,7 @@
     ;; --- nausea ---
     ("nausea"                       . nausea)
     ("nauseous"                     . nausea)
+    ("sick"                         . nausea)
     ("feel sick"                    . nausea)
     ("feeling sick"                 . nausea)
     ("queasy"                       . nausea)
@@ -492,7 +494,6 @@
     ("threw up"                     . vomiting)
     ("emesis"                       . vomiting)
     ("regurgitation"                . vomiting)
-    ("being sick"                   . vomiting)
     ("puking"                       . vomiting)
     ("puke"                         . vomiting)
     ("retching"                     . vomiting)
@@ -857,6 +858,14 @@
     ("hands and feet freezing"      . "cold_hands_and_feet")
     ("poor circulation in hands"    . "cold_hands_and_feet")
     ("numb hands and feet"          . "cold_hands_and_feet")
+    ;; Post-stop-word-removal variants:
+    ;; "my hands and feet are always cold" -> "hands feet always cold" after removal
+    ("hands feet always cold"       . "cold_hands_and_feet")
+    ("feet always cold"             . "cold_hands_and_feet")
+    ("hands always cold"            . "cold_hands_and_feet")
+    ("hands feet cold"              . "cold_hands_and_feet")
+    ("feet freezing"                . "cold_hands_and_feet")
+    ("hands freezing"               . "cold_hands_and_feet")
 
   ))
 

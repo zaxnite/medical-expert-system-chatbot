@@ -214,7 +214,7 @@ class Consultation:
                         conf_res = list(self._bridge._prolog.query(f"confidence({sole}, Pct)"))
                         matched  = list(self._bridge._prolog.query(f"symptom_of({sole}, S), symptom(S)"))
                         pct = float(conf_res[0]["Pct"]) if conf_res else 0.0
-                        if pct >= 65.0 and len(matched) >= 3:
+                        if pct >= 70.0 and len(matched) >= 3:
                             action = self._bridge._build_early_exit_result(sole, pct)
 
                 self._handle_action(action)

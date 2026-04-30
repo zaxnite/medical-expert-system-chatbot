@@ -142,7 +142,7 @@ check_early_exit :-
     length(Candidates, 1),         % only one candidate left
     Candidates = [Disease],
     confidence(Disease, Pct),
-    Pct >= 60, !,                    % confident enough
+    Pct >= 70, !,                    % confident enough
     assertz(asked(early_exit_flag)).  % triggers consultation_complete
 
 check_early_exit.  % silent success if conditions not met

@@ -441,7 +441,7 @@ Detected:   pulsating_pain, visual_aura
 
 ------------------------------------------------------------
 
-Edge 3 — Appendicitis vs Gastroenteritis disambiguation
+Edge 3A — Appendicitis vs Gastroenteritis disambiguation
 ------------------------------------------------------------
 Free text:  I feel nauseous and I have stomach pain
 Detected:   nausea, abdominal_pain
@@ -457,6 +457,22 @@ Detected:   nausea, abdominal_pain
   Expected:   Appendicitis
 
 ------------------------------------------------------------
+Edge 3B — Gastroenteritis vs Appendicitis (Disambiguation)
+------------------------------------------------------------
+Free text:  I've been vomiting and I have bad stomach cramps
+Detected:   vomiting, cramping
+
+  Say YES to:
+    nausea          "Are you feeling nauseous?"
+    abdominal_pain  "Do you have pain in your abdomen or stomach area?"
+    diarrhea        "Are you experiencing diarrhea?"
+    low_grade_fever "Do you have a mild persistent low-grade fever?"
+
+  Say NO to:
+    right_lower_quad_pain  "Do you have sharp pain in the lower right of your abdomen?"
+    rebound_tenderness     "Does your abdominal pain worsen when pressure is released?"
+
+  Expected:   Gastroenteritis
 
 Edge 4 — TB vs Pneumonia disambiguation
 ------------------------------------------------------------
@@ -484,12 +500,13 @@ Detected:   chronic_cough, night_sweats
   Say YES to:
     weight_loss       "Have you lost weight recently without trying?"
     productive_cough  "Are you coughing up mucus or phlegm?"
+    low_grade_fever   "Do you have a mild persistent low-grade fever?"
 
   Say NO to:
     haemoptysis  "Have you coughed up blood or blood-stained mucus?"
     sudden_onset "Did your symptoms come on very suddenly?"
 
-  Expected:   Tuberculosis — 69.2% confidence
+  Expected:   Tuberculosis — 83.3% confidence
 
 ============================================================
 SCORING REFERENCE — IDF WEIGHTS

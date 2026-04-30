@@ -679,15 +679,6 @@ all_candidates(List) :-
 %
 % WHAT CHANGED AND WHY:
 %
-% Old formula: confidence = matched_count / total_symptoms * 100
-%
-% Problem: fatigue appears in 13/20 diseases, fever in 10/20.
-% Confirming them barely distinguishes anything, yet they counted
-% the same as body_aches (only in influenza) or loss_of_smell
-% (only in COVID-19). This caused diseases like pneumonia and
-% dengue to reach 50% confidence purely from fever+cough+fatigue,
-% which are generic flu-like symptoms.
-%
 % New formula: confidence = sum(idf_weight of matched symptoms)
 %                         / sum(idf_weight of ALL disease symptoms) * 100
 %
