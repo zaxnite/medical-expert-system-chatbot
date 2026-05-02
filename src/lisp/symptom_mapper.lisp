@@ -53,9 +53,8 @@
     ("recurrent fever"              . "cyclical_fever")
 
     ;; --- cough (shared by 4+ diseases — no label) ---
-    ("i have a cough"              . cough)
+    ("a cough"                     . cough)
     ("got a cough"                 . cough)
-    ("have a cough"                . cough)
     ("dry cough"                   . cough)
     ("hacking cough"               . cough)
     ("whooping cough"              . cough)
@@ -454,6 +453,7 @@
 
     ;; --- loss of taste — Covid19 ---
     ("loss of taste"                . "loss_of_taste")
+    ("taste"                   . "loss_of_taste")
     ("cant taste"                   . "loss_of_taste")
     ("no sense of taste"            . "loss_of_taste")
     ("lost taste"                   . "loss_of_taste")
@@ -742,9 +742,11 @@
 
     ;; --- frequent urination — Diabetes T2 ---
     ("frequent urination"           . "frequent_urination")
+    ("keep needing to urinate"      . "frequent_urination")
     ("urinating a lot"              . "frequent_urination")
     ("peeing a lot"                 . "frequent_urination")
     ("pee a lot"                    . "frequent_urination")
+    ("pee"                          . "frequent_urination")
     ("polyuria"                     . "frequent_urination")
     ("going to toilet often"        . "frequent_urination")
     ("need to pee all the time"     . "frequent_urination")

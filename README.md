@@ -29,7 +29,7 @@
 
 The system conducts a medical consultation in three stages:
 
-1. **Free-text intake** - the patient types a description of their symptoms in plain English (e.g., *"I have body aches and it came on suddenly"*). SBCL/Lisp parses this into structured symptom atoms.
+1. **Free-text intake** - the patient types a description of their symptoms in plain English (e.g., *"I have body aches and it came on suddenly"*). SBCL/Lisp parses this into structured symptom atoms, with per-symptom negation scoping so that *"I don't have a fever but I'm tired"* correctly denies fever and confirms fatigue independently.
 2. **Confirmation** - the patient confirms or rejects the detected symptoms.
 3. **Yes/No questioning** - Prolog's inference engine selects the most informative question at each step, progressively eliminating diseases until a confident diagnosis is reached.
 
@@ -42,7 +42,7 @@ The UI runs on the **main thread**. The Prolog reasoning engine runs on a **back
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                     MAIN THREAD                         │
-│                  interface.py (CLI)                     │
+│         interface.py (CLI) or gui.py (Tkinter)          │
 │   Patient input  ──►  free-text  ──►  yes/no answers   │
 └───────────────────────┬────────────────────┬────────────┘
                         │ events             │ answers
@@ -84,6 +84,7 @@ The UI runs on the **main thread**. The Prolog reasoning engine runs on a **back
 medical-expert-system-chatbot/
 │
 ├── main.py                         # Entry point - wires all three layers together
+├── gui.py                          # Optional Tkinter GUI (alternative to terminal UI)
 │
 ├── src/
 │   ├── prolog/
@@ -115,15 +116,18 @@ medical-expert-system-chatbot/
 
 ## File-by-File Overview
 
-### Entry Point
+### Entry Points
 
 #### `main.py`
-The application entry point. Resolves absolute paths to `src/prolog/`, `src/lisp/`, and `src/oop/` relative to its own location, then runs two checks before launching:
+The terminal application entry point. Resolves absolute paths to `src/prolog/`, `src/lisp/`, and `src/oop/` relative to its own location, then runs two checks before launching:
 
 1. **Prolog check** - verifies that `knowledge_base.pl`, `diagnosis_rules.pl`, and `inference_engine.pl` all exist in `src/prolog/`. Exits with an error if any are missing.
 2. **Lisp check** - instantiates `LispConnector` and calls `is_available()` to confirm SBCL is on `PATH` and the `.lisp` files are present. Exits with an install hint if not.
 
 If both checks pass, it prints the startup banner showing the status of all three paradigm layers and launches `MedicalInterface`. The system always runs in interactive consultation mode - there are no command-line flags.
+
+#### `gui.py`
+An optional Tkinter GUI that provides the same consultation flow as the terminal interface in a dark-themed windowed application. Pages are managed as `tk.Frame` subclasses (`WelcomePage`, `IntakePage`, `ConfirmPage`, `QAPage`, `ResultPage`) and swapped in and out by the `MedicalApp` controller. All diagnosis logic is delegated to `consultation.py` and `bridge.py` - the GUI contains no inference code. Run directly with `python gui.py`.
 
 ---
 
@@ -140,17 +144,18 @@ Pure declarative facts - no inference logic. Defines:
 This file is loaded first. Nothing here changes at runtime.
 
 #### `src/prolog/diagnosis_rules.pl`
-The core inference engine. Contains 7 logical sections:
+The core inference engine. Contains 8 logical sections:
 
 | Section | What it does |
 |---|---|
 | Session control | `assert_symptom/1`, `deny_symptom/1`, `reset_session/0` - manage dynamic facts |
-| Hard rules | `hard_rule(Disease, not(Symptom))` - if a patient has a symptom that is impossible for a disease, that disease is immediately eliminated. 60+ rules. |
-| Hallmark rules | `hallmark_symptom(Disease, Symptom)` - if a patient denies a hallmark, the disease is eliminated. Also used for early confirmation. |
-| Candidate filter | `candidate(Disease)` - a disease remains a candidate only if no hard rules have fired and no hallmarks have been denied |
+| Hard rules | `hard_rule(Disease, not(Symptom))` - if a patient has a symptom that is impossible for a disease, that disease is immediately eliminated. 60+ rules across all 20 diseases. |
+| Extended hard rules | Additional cross-disease elimination rules for the newer symptoms (e.g. `vesicular_rash`, `haemoptysis`, `burning_epigastric_pain`, `pulsating_pain`). |
+| Hallmark rules | `hallmark_symptom(Disease, Symptom)` - if a patient denies a hallmark, the disease is eliminated immediately. |
+| Candidate filter | `candidate(Disease)` - a disease remains a candidate only if no hard rules have fired, no required rare symptoms are denied, and no hallmarks have been denied. |
 | **Scoring** | `confidence(Disease, Pct)` - IDF-weighted confidence: `Σ(idf_weight of matched symptoms) / Σ(idf_weight of active symptoms) × 100`. Denied symptoms are excluded from the denominator so a single NO answer cannot permanently cap a score. |
-| Diagnosis | `diagnosis(Disease)` - fires when confidence ≥ 65%, at least 3 symptoms confirmed, and this disease is the top candidate |
-| Question selection | `next_question(Symptom)` - picks the symptom that maximises coverage across remaining candidates, with bonuses for symptoms that cover all candidates or are unique to one |
+| Diagnosis | `diagnosis(Disease)` - fires when confidence ≥ 70%, at least 3 symptoms confirmed, and this disease is the top candidate. |
+| Question selection | `next_question(Symptom)` - picks the symptom that maximises coverage across remaining candidates, with bonuses for symptoms that cover all candidates or are unique to one (late-stage boost). |
 
 #### `src/prolog/inference_engine.pl`
 Drives the consultation loop. Provides:
@@ -164,7 +169,7 @@ Drives the consultation loop. Provides:
 ### Functional Layer (Lisp / SBCL)
 
 #### `src/lisp/symptom_mapper.lisp`
-A pure declarative mapping table (`*symptom-map*`) with 400+ entries. Maps natural language phrases to Prolog symptom atoms. Examples:
+A pure declarative mapping table (`*symptom-map*`) with 400+ entries organised into 7 symptom groups. Maps natural language phrases to Prolog symptom atoms. Examples:
 
 ```lisp
 ("throbbing headache"    . pulsating_pain)
@@ -174,30 +179,30 @@ A pure declarative mapping table (`*symptom-map*`) with 400+ entries. Maps natur
 ("always feel cold"      . cold_intolerance)
 ```
 
-No functions - just data. Loaded by `input_processor.lisp`.
+Also defines `*negation-words*` and `*stop-words*` used by `input_processor.lisp`. No functions - just data.
 
 #### `src/lisp/input_processor.lisp`
 A stateless NLP pipeline. Takes a raw patient string and returns a structured result. The pipeline stages are:
 
 1. **Normalise** - lowercase, strip punctuation, trim whitespace
-2. **Detect negation** - look for words like *"no"*, *"not"*, *"don't have"*, *"without"* and flag the result
-3. **Tokenise** - split on spaces and delimiters
-4. **Phrase matching** - scan `*symptom-map*` for longest-match phrases in the token list
-5. **Deduplicate** - `remove-duplicates` to prevent the same atom appearing twice
+2. **Remove stop words** - filter common words (`"i"`, `"have"`, `"a"`, etc.) using `remove-if` with a lambda
+3. **Phrase matching** - scan `*symptom-map*` for matching phrases using `find-all-matches-tagged`, which returns `(atom . negated-p)` pairs
+4. **Per-symptom negation scoping** - negation windows are opened by words like `"not"` / `"don't"` and closed by scope breakers like `"but"` / `"and"`. A symptom is denied only if its position in the text falls inside an open window. This allows *"I don't have a fever but I'm tired"* to deny fever while confirming fatigue.
+5. **Deduplicate** - custom `deduplicate-tagged` using `reduce` removes duplicate atoms, first occurrence wins
 6. **Subsume** - remove generic atoms if a more specific one was already found (e.g. remove `fever` if `low_grade_fever` is present)
-7. **Format** - output `SYMPTOMS:atom1,atom2|NEGATED:NIL` for Python to parse
+7. **Format** - output `CONFIRMED:atom1,atom2|DENIED:atom3|NEGATED:T` for Python to parse
 
-Exported functions: `med-process-input`, `format-result-for-python`.
+Exported functions: `med-process-input`, `format-result-for-python`, `process-input-list`, `merge-results`.
 
 #### `src/lisp/runner.lsp`
-Thin entry point used when SBCL is invoked as a subprocess. Loads `input_processor.lisp`, reads patient text from a temp file, calls the pipeline, and writes the formatted result to stdout before quitting.
+Thin entry point used when SBCL is invoked as a subprocess. Loads `symptom_mapper.lisp` and `input_processor.lisp`, reads patient text from a command-line argument, calls the pipeline, and writes the formatted result to stdout before quitting.
 
 ---
 
 ### OOP Layer (Python)
 
 #### `src/oop/session.py`
-All mutable state for a patient consultation. Contains four classes:
+All mutable state for a patient consultation. Contains the following classes:
 
 | Class | Responsibility |
 |---|---|
@@ -206,7 +211,7 @@ All mutable state for a patient consultation. Contains four classes:
 | `QAEntry` | Dataclass: one question-answer exchange (symptom, text, answer, timestamp, candidates remaining) |
 | `DiagnosisResult` | Dataclass: final diagnosis (disease, confidence, description, tests, conclusive flag) |
 | `MedicalRecord` | Tracks confirmed and denied symptoms. Provides `record_yes()`, `record_no()`, `has_symptom()` |
-| `ConsultationLog` | Ordered list of `QAEntry` objects. Tracks `asked_question_count` separately from intake entries. `to_dict()` for JSON export. |
+| `ConsultationLog` | Ordered list of `QAEntry` objects. Tracks `asked_question_count` separately from intake entries so intake symptoms don't inflate the displayed question number. `to_dict()` for JSON export. |
 | `UserSession` | Root object. Owns `MedicalRecord` + `ConsultationLog`. Lifecycle methods: `start()`, `complete()`, `end_incomplete()`. Full JSON export via `export_json()`. |
 
 #### `src/oop/consultation.py`
@@ -216,7 +221,8 @@ The controller that connects all three layers. Key design decisions:
 - **Thread synchronisation** uses three `threading.Event` objects: `_answer_event` (main→background), `_question_event` (background→main), `_done_event` (signals completion).
 - **Event system** - `on(event, callback)` / `_emit(event, data)` - the interface registers callbacks before `start()` is called, eliminating race conditions.
 - **Intake gate** - `_intake_ready` event pauses the reasoning thread until free-text intake is complete and pre-loaded symptoms are asserted into Prolog.
-- **Preloaded symptom skipping** - after Lisp detects symptoms from free text, they are asserted into Prolog and recorded in `_preloaded`. The question selector then skips them to avoid asking the patient twice.
+- **Preloaded symptom skipping** - after Lisp detects symptoms from free text, they are asserted into Prolog and recorded in `_preloaded` / `_preloaded_denied`. The question selector skips these to avoid asking the patient twice.
+- **Early exit** - if only 1 candidate remains with ≥ 70% confidence and ≥ 3 confirmed symptoms, questioning stops and a result is returned immediately without asking further questions.
 
 #### `src/oop/interface.py`
 The terminal UI. Runs entirely on the main thread. Contains zero business logic - all decisions are delegated to `Consultation`. Responsibilities:
@@ -243,6 +249,7 @@ Python ↔ SWI-Prolog bridge using `pyswip`. One instance per consultation. Key 
 | `step(symptom, answer)` | Records one patient answer, checks for early exit, returns `{'action': 'ask', ...}` or `{'action': 'result', ...}` |
 | `get_status()` | Returns snapshot: candidates, confirmed/denied lists, question count, top confidence |
 | `_build_result()` | Queries `consult_result/3` and formats the final diagnosis dict |
+| `_build_early_exit_result(disease, pct)` | Builds the result dict when the single-candidate early exit fires |
 | `query(str)` | Escape hatch - run any Prolog query and return results as Python dicts |
 
 Sets `SWIPL_STACK_LIMIT=256m` at startup to prevent stack overflow with 20 diseases.
@@ -250,10 +257,10 @@ Sets `SWIPL_STACK_LIMIT=256m` at startup to prevent stack overflow with 20 disea
 #### `integration/lisp_connector.py`
 Python ↔ SBCL bridge using `subprocess`. Key behaviour:
 - Detects SBCL via `shutil.which("sbcl")`
-- Writes patient text to a temp file (avoids all shell-escaping issues on Windows)
+- Writes patient text to a temp file in `src/lisp/` (avoids all shell-escaping issues on Windows)
 - Builds a `--eval` chain: load → read file → call pipeline → write result → quit
-- Parses the `SYMPTOMS:...|NEGATED:...` output line from stdout
-- `extract_for_session(text)` returns `{'to_assert': [...], 'to_deny': [...]}` ready for `bridge.py`
+- Parses the `CONFIRMED:...|DENIED:...|NEGATED:...` output line from stdout, splitting confirmed and denied symptoms into separate lists
+- `extract_for_session(text)` returns `{'to_assert': [...], 'to_deny': [...]}` ready for `consultation.py` to assert into Prolog
 
 ---
 
@@ -265,18 +272,19 @@ The single test file covering all 20 diseases and 14 edge cases, structured in t
 **Part 1 - Disease tests (Tests 1-20):** one test per disease, grouped by the five medical categories. Each entry provides the exact free-text phrase to type at the symptom prompt, which symptom atoms Lisp will detect, the exact yes/no answers for each question, and the expected diagnosis with IDF confidence percentage.
 
 **Part 2 - Edge cases (Edges 1-14):** disambiguation scenarios and inconclusive cases. Covers disease pairs sharing three or more symptoms (Dengue vs Malaria, Meningitis vs Tension Headache, etc.), both-direction tests for each pair, the TB-with-haemoptysis-denied scenario that validates the denominator-exclusion fix, and three Inconclusive scenarios with different root causes. An IDF weight reference table is included at the end.
+
 ---
 
 ## How Each Paradigm Is Used
 
 ### Object-Oriented (Python)
-OOP is used where **identity and mutable state** matter most. A `UserSession` has identity (who is this patient?), state (what has been asked?), and behaviour (log an answer, export a report). Inheritance and encapsulation keep the three sub-objects (`MedicalRecord`, `ConsultationLog`, `DiagnosisResult`) independently testable. Polymorphism through `ConfidenceLevel.from_pct()` keeps display logic out of the data layer.
+OOP is used where **identity and mutable state** matter most. A `UserSession` has identity (who is this patient?), state (what has been asked?), and behaviour (log an answer, export a report). Encapsulation keeps the three sub-objects (`MedicalRecord`, `ConsultationLog`, `DiagnosisResult`) independently testable. `ConfidenceLevel.from_pct()` keeps display logic out of the data layer, and the `Consultation` event system decouples the UI from the reasoning thread entirely.
 
 ### Functional (Lisp / SBCL)
-Lisp is used for **stateless data transformation**. `input_processor.lisp` takes a string and returns a structured result with no side effects - calling it twice with the same input always returns the same output. Higher-order functions (`mapcar`, `remove-if`, `remove-duplicates`) process the symptom list in a declarative pipeline. This makes the input processor easy to test in isolation and safe to call from a subprocess without shared state concerns.
+Lisp is used for **stateless data transformation**. `input_processor.lisp` takes a string and returns a structured result with no side effects - calling it twice with the same input always returns the same output. Higher-order functions (`mapcar`, `remove-if`, `reduce`) process the symptom list in a declarative pipeline. Negation window logic is implemented as pure functions over character positions, with no mutable state. This makes the input processor easy to test in isolation and safe to call from a subprocess.
 
 ### Logic (SWI-Prolog)
-Prolog is used for **inference and constraint satisfaction**. Hard rules are declared as facts (`hard_rule(disease, not(symptom))`), and Prolog's backtracking evaluates them automatically across all 20 diseases on every step. The `next_question/1` predicate uses Prolog's `findall/3` and `sort/2` to rank symptoms by information gain without any explicit loop. `\+` (negation-as-failure) implements the closed-world assumption cleanly.
+Prolog is used for **inference and constraint satisfaction**. Hard rules are declared as facts (`hard_rule(disease, not(symptom))`), and Prolog's backtracking evaluates them automatically across all 20 diseases on every step. The `next_question/1` predicate uses `findall/3` and `sort/2` to rank symptoms by information gain without any explicit loop. `\+` (negation-as-failure) implements the closed-world assumption cleanly. The entire session state (confirmed/denied symptoms, question count) lives in dynamic facts that are fully retracted between consultations.
 
 ---
 
@@ -316,8 +324,8 @@ Where `idf_weight(symptom) = log(20 / number_of_diseases_with_this_symptom)`.
 **Key properties:**
 - All 20 diseases reach exactly 100% when all their symptoms are confirmed
 - Denied symptoms are **excluded from the denominator** - a NO answer never permanently caps a disease's maximum score
-- Diagnosis threshold: **65%** with a minimum of **3 confirmed symptoms**
-- Early exit: if only 1 candidate remains with ≥ 65% confidence and ≥ 3 confirmed symptoms, questioning stops immediately
+- Diagnosis threshold: **70%** with a minimum of **3 confirmed symptoms**
+- Early exit: if only 1 candidate remains with ≥ 70% confidence and ≥ 3 confirmed symptoms, questioning stops immediately
 
 ---
 
@@ -357,11 +365,19 @@ pip install pyswip
 
 ## Running the System
 
+### Terminal interface
+
 ```bash
 python main.py
 ```
 
-That is the only command needed. The system always launches in interactive consultation mode.
+### Graphical interface (Tkinter)
+
+```bash
+python gui.py
+```
+
+Both commands launch the full consultation system. The terminal interface is the primary entry point; the GUI provides the same flow in a windowed dark-themed application.
 
 ### What to expect
 

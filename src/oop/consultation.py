@@ -263,9 +263,10 @@ class Consultation:
 
             display_number = self._session.log.asked_question_count + 1
             self._emit(ConsultationEvent.QUESTION_READY, {
-                "symptom":  self._current_symptom,
-                "question": self._current_question,
-                "number":   display_number
+                "symptom":        self._current_symptom,
+                "question":       self._current_question,
+                "number":         display_number,
+                "candidate_count": len(status.get("candidates", []))
             })
             self._question_event.set()
 
